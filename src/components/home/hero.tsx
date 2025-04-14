@@ -1,69 +1,78 @@
-"use client"
+"use client";
 
-import { useRef, useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ArrowDown } from "lucide-react"
-import { useInView } from "framer-motion"
+import { useRef, useState, useEffect, JSX } from "react";
+import { motion, Variants } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowDown } from "lucide-react";
 
-// Array of designations for the typing effect
-const designations = [
+// Type definitions
+type Designation = string;
+interface AnimationProps {
+  opacity: number;
+  y?: number;
+}
+
+// Constants
+const designations: Designation[] = [
   "Front-End Web Developer",
   "UI/UX Designer",
   "Mobile App Developer",
   "Web Developer",
   "Frontend Specialist",
-]
+];
 
-export default function Hero() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
-  const [designation, setDesignation] = useState(designations[0])
-  const [index, setIndex] = useState(0)
-  const [subIndex, setSubIndex] = useState(0)
-  const [reverse, setReverse] = useState(false)
-  const [blink, setBlink] = useState(true)
+const fadeInUpVariants: Variants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
+
+export default function Hero(): JSX.Element {
+  const ref = useRef<HTMLElement>(null);
+  const [index, setIndex] = useState<number>(0);
+  const [subIndex, setSubIndex] = useState<number>(0);
+  const [reverse, setReverse] = useState<boolean>(false);
+  const [blink, setBlink] = useState<boolean>(true);
 
   // Typing effect
-  useEffect(() => {
+  useEffect((): (() => void) => {
     if (reverse) {
       if (subIndex === 0) {
-        setReverse(false)
-        setIndex((prev) => (prev + 1) % designations.length)
-        return
+        setReverse(false);
+        setIndex((prev) => (prev + 1) % designations.length);
+        return () => {};
       }
 
       const timeout = setTimeout(() => {
-        setSubIndex((prev) => prev - 1)
-      }, 50)
+        setSubIndex((prev) => prev - 1);
+      }, 50);
 
-      return () => clearTimeout(timeout)
+      return () => clearTimeout(timeout);
     }
 
     if (subIndex === designations[index].length + 1 && !reverse) {
       const timeout = setTimeout(() => {
-        setReverse(true)
-      }, 2000)
+        setReverse(true);
+      }, 2000);
 
-      return () => clearTimeout(timeout)
+      return () => clearTimeout(timeout);
     }
 
     const timeout = setTimeout(() => {
-      setSubIndex((prev) => prev + 1)
-    }, 150)
+      setSubIndex((prev) => prev + 1);
+    }, 150);
 
-    return () => clearTimeout(timeout)
-  }, [subIndex, index, reverse])
+    return () => clearTimeout(timeout);
+  }, [subIndex, index, reverse]);
 
   // Blinking cursor effect
-  useEffect(() => {
+  useEffect((): (() => void) => {
     const timeout = setTimeout(() => {
-      setBlink((prev) => !prev)
-    }, 500)
+      setBlink((prev) => !prev);
+    }, 500);
 
-    return () => clearTimeout(timeout)
-  }, [blink])
+    return () => clearTimeout(timeout);
+  }, [blink]);
 
   return (
     <section
@@ -79,12 +88,19 @@ export default function Hero() {
             className="text-purple-400 font-medium mb-4"
           >
             {designations[index].substring(0, subIndex)}
-            <span className={`${blink ? "opacity-100" : "opacity-0"} transition-opacity`}>|</span>
+            <span
+              className={`${
+                blink ? "opacity-100" : "opacity-0"
+              } transition-opacity`}
+            >
+              |
+            </span>
           </motion.p>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial="initial"
+            animate="animate"
+            variants={fadeInUpVariants}
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-5xl md:text-7xl font-bold mb-6"
           >
@@ -92,8 +108,9 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial="initial"
+            animate="animate"
+            variants={fadeInUpVariants}
             transition={{ delay: 0.6, duration: 0.8 }}
             className="text-gray-300 text-xl md:text-2xl max-w-2xl mx-auto mb-10"
           >
@@ -101,8 +118,9 @@ export default function Hero() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial="initial"
+            animate="animate"
+            variants={fadeInUpVariants}
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
@@ -125,7 +143,12 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 0.8, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+        transition={{
+          delay: 1.2,
+          duration: 0.8,
+          repeat: Number.POSITIVE_INFINITY,
+          repeatType: "reverse",
+        }}
         className="absolute bottom-10 text-center"
       >
         <Link
@@ -137,5 +160,5 @@ export default function Hero() {
         </Link>
       </motion.div>
     </section>
-  )
+  );
 }
