@@ -1,8 +1,75 @@
 "use client"
-import Link from "next/link"
-import { Github, Linkedin, Twitter, Mail } from "lucide-react"
 
-export default function Footer() {
+import { JSX } from "react"
+import Link from "next/link"
+import { Github, Linkedin, Twitter, Mail, LucideIcon } from "lucide-react"
+
+// Types
+interface SocialLink {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  ariaLabel: string;
+}
+
+interface QuickLink {
+  name: string;
+  href: string;
+}
+
+interface Service {
+  name: string;
+  href: string;
+}
+
+// Constants
+const socialLinks: SocialLink[] = [
+  {
+    name: "GitHub",
+    href: "https://github.com/yourusername",
+    icon: Github,
+    ariaLabel: "Visit my GitHub profile",
+  },
+  {
+    name: "LinkedIn",
+    href: "https://linkedin.com/in/yourusername",
+    icon: Linkedin,
+    ariaLabel: "Connect with me on LinkedIn",
+  },
+  {
+    name: "Twitter",
+    href: "https://twitter.com/yourusername",
+    icon: Twitter,
+    ariaLabel: "Follow me on Twitter",
+  },
+  {
+    name: "Email",
+    href: "mailto:najim@example.com",
+    icon: Mail,
+    ariaLabel: "Send me an email",
+  },
+]
+
+const quickLinks: QuickLink[] = [
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Projects", href: "/projects" },
+  { name: "Testimonials", href: "/testimonials" },
+  { name: "Blog", href: "/blog" },
+  { name: "Contact", href: "#contact" },
+]
+
+const services: Service[] = [
+  { name: "Web Development", href: "#" },
+  { name: "UI/UX Design", href: "#" },
+  { name: "Mobile Development", href: "#" },
+  { name: "SEO Optimization", href: "#" },
+  { name: "API Development", href: "#" },
+]
+
+export default function Footer(): JSX.Element {
+  const currentYear: number = new Date().getFullYear()
+
   return (
     <footer className="bg-gray-900 border-t border-gray-800">
       <div className="container mx-auto px-4 py-12">
@@ -16,116 +83,76 @@ export default function Footer() {
               applications.
             </p>
             <div className="flex space-x-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="mailto:najim@example.com"
-                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                aria-label="Email"
-              >
-                <Mail className="w-5 h-5" />
-              </a>
+              {socialLinks.map((link) => {
+                const Icon = link.icon
+                return (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-purple-600 transition-colors"
+                    aria-label={link.ariaLabel}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon className="w-5 h-5" aria-hidden="true" />
+                  </a>
+                )
+              })}
             </div>
           </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="/projects" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Projects
-                </Link>
-              </li>
-              <li>
-                <Link href="/testimonials" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Testimonials
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="#contact" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Contact
-                </Link>
-              </li>
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-purple-400 transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Services</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Web Development
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  UI/UX Design
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  Mobile Development
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  SEO Optimization
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-400 hover:text-purple-400 transition-colors">
-                  API Development
-                </Link>
-              </li>
+              {services.map((service) => (
+                <li key={service.name}>
+                  <Link 
+                    href={service.href}
+                    className="text-gray-400 hover:text-purple-400 transition-colors"
+                  >
+                    {service.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Najim. All rights reserved.</p>
+          <p className="text-gray-400 text-sm">
+            © {currentYear} Najim. All rights reserved.
+          </p>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-6">
               <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                <Link 
+                  href="/privacy" 
+                  className="text-gray-400 hover:text-purple-400 transition-colors text-sm"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                <Link 
+                  href="/terms" 
+                  className="text-gray-400 hover:text-purple-400 transition-colors text-sm"
+                >
                   Terms of Service
                 </Link>
               </li>
