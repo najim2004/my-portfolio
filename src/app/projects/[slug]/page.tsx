@@ -1,17 +1,40 @@
-import { notFound } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Github, ExternalLink } from "lucide-react"
-import ScrollNavbar from "@/components/layout/scroll-navbar"
-import Footer from "@/components/layout/footer"
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Github, ExternalLink } from "lucide-react";
+import ScrollNavbar from "@/components/layout/scroll-navbar";
+import Footer from "@/components/layout/footer";
+import { JSX } from "react";
+
+// Types
+interface Project {
+  slug: string;
+  title: string;
+  description: string;
+  fullDescription: string;
+  image: string;
+  technologies: string[];
+  features: string[];
+  liveLink: string;
+  githubLink: string;
+  date: string;
+}
+
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
 
 // Mock data - in a real app, this would come from your database
-const projects = [
+const projects: Project[] = [
   {
     slug: "e-commerce-platform",
     title: "E-Commerce Platform",
-    description: "A fully responsive e-commerce platform with product filtering and cart functionality.",
+    description:
+      "A fully responsive e-commerce platform with product filtering and cart functionality.",
     fullDescription: `
       This e-commerce platform was built with Next.js, MongoDB, and Stripe integration. It features a responsive design,
       product filtering, user authentication, shopping cart functionality, and secure checkout process.
@@ -36,7 +59,8 @@ const projects = [
   {
     slug: "admin-dashboard",
     title: "Admin Dashboard",
-    description: "An admin dashboard with data visualization, user management, and dark mode.",
+    description:
+      "An admin dashboard with data visualization, user management, and dark mode.",
     fullDescription: `
       This admin dashboard provides a comprehensive interface for managing application data, users, and analytics.
       Built with React and Chart.js, it offers powerful data visualization tools and a clean, intuitive user interface.
@@ -61,7 +85,8 @@ const projects = [
   {
     slug: "social-media-app",
     title: "Social Media App",
-    description: "A social platform with real-time messaging, post creation, and user profiles.",
+    description:
+      "A social platform with real-time messaging, post creation, and user profiles.",
     fullDescription: `
       This social media application enables users to connect, share content, and communicate in real-time. Built with
       Next.js and Socket.io, it provides a seamless and interactive user experience.
@@ -83,16 +108,18 @@ const projects = [
     githubLink: "#",
     date: "August 2023",
   },
-]
+];
 
-export async function generateMetadata({ params }) {
-  const project = projects.find((p) => p.slug === params.slug)
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const project = projects.find((p) => p.slug === params.slug);
 
   if (!project) {
     return {
       title: "Project Not Found",
       description: "The requested project could not be found.",
-    }
+    };
   }
 
   return {
@@ -110,20 +137,20 @@ export async function generateMetadata({ params }) {
         },
       ],
     },
-  }
+  };
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   return projects.map((project) => ({
     slug: project.slug,
-  }))
+  }));
 }
 
-export default function ProjectPage({ params }) {
-  const project = projects.find((p) => p.slug === params.slug)
+export default function ProjectPage({ params }: PageProps): JSX.Element {
+  const project = projects.find((p) => p.slug === params.slug);
 
   if (!project) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -132,13 +159,18 @@ export default function ProjectPage({ params }) {
 
       <div className="pt-24 pb-16">
         <div className="container px-4 mx-auto">
-          <Link href="/projects" className="inline-flex items-center text-purple-400 hover:text-purple-300 mb-8">
+          <Link
+            href="/projects"
+            className="inline-flex items-center text-purple-400 hover:text-purple-300 mb-8"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Projects
           </Link>
 
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">{project.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {project.title}
+            </h1>
             <p className="text-gray-400 mb-8">{project.date}</p>
 
             <div className="rounded-xl overflow-hidden mb-10">
@@ -153,7 +185,10 @@ export default function ProjectPage({ params }) {
 
             <div className="flex flex-wrap gap-2 mb-8">
               {project.technologies.map((tech, index) => (
-                <span key={index} className="px-3 py-1 bg-gray-800 text-purple-300 rounded-full text-sm">
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-gray-800 text-purple-300 rounded-full text-sm"
+                >
                   {tech}
                 </span>
               ))}
@@ -161,7 +196,9 @@ export default function ProjectPage({ params }) {
 
             <div className="prose prose-invert max-w-none mb-10">
               <p className="text-xl mb-6">{project.description}</p>
-              <div className="whitespace-pre-line">{project.fullDescription}</div>
+              <div className="whitespace-pre-line">
+                {project.fullDescription}
+              </div>
 
               <h2 className="text-2xl font-bold mt-10 mb-4">Key Features</h2>
               <ul className="space-y-2">
@@ -176,13 +213,21 @@ export default function ProjectPage({ params }) {
 
             <div className="flex flex-wrap gap-4">
               <Button className="bg-purple-600 hover:bg-purple-700" asChild>
-                <a href={project.liveLink} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={project.liveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Live Demo
                 </a>
               </Button>
               <Button variant="outline" asChild>
-                <a href={project.githubLink} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={project.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Github className="mr-2 h-4 w-4" />
                   View Code
                 </a>
@@ -194,5 +239,5 @@ export default function ProjectPage({ params }) {
 
       <Footer />
     </main>
-  )
+  );
 }

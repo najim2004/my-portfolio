@@ -1,9 +1,45 @@
-import { Quote } from "lucide-react"
-import ScrollNavbar from "@/components/layout/scroll-navbar"
-import Footer from "@/components/layout/footer"
+import { Metadata } from "next";
+import Image from "next/image";
+import { Quote } from "lucide-react";
+import ScrollNavbar from "@/components/layout/scroll-navbar";
+import Footer from "@/components/layout/footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { JSX } from "react";
 
-// Mock data - in a real app, this would come from your database
-const testimonials = [
+// Types
+interface Testimonial {
+  name: string;
+  position: string;
+  content: string;
+  avatar: string;
+  company: string;
+}
+
+interface TestimonialFormData {
+  name: string;
+  email: string;
+  position: string;
+  company: string;
+  testimonial: string;
+}
+
+// Metadata
+export const metadata: Metadata = {
+  title: "Testimonials | Najim's Portfolio",
+  description:
+    "Read what clients and colleagues have to say about working with Najim.",
+  openGraph: {
+    title: "Testimonials | Najim's Portfolio",
+    description:
+      "Read what clients and colleagues have to say about working with Najim.",
+    type: "website",
+  },
+};
+
+// Mock data
+const testimonials: Testimonial[] = [
   {
     name: "Sarah Johnson",
     position: "CEO at TechStart",
@@ -52,14 +88,23 @@ const testimonials = [
     avatar: "/placeholder.svg?height=100&width=100",
     company: "Enterprise Solutions",
   },
-]
+];
 
-export const metadata = {
-  title: "Testimonials | Najim's Portfolio",
-  description: "Read what clients and colleagues have to say about working with Najim.",
-}
+export default function TestimonialsPage(): JSX.Element {
+  const handleSubmit = async (formData: FormData): Promise<void> => {
+    "use server";
 
-export default function TestimonialsPage() {
+    const testimonialData: TestimonialFormData = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      position: formData.get("position") as string,
+      company: formData.get("company") as string,
+      testimonial: formData.get("testimonial") as string,
+    };
+
+    // Handle form submission logic here
+  };
+
   return (
     <main className="min-h-screen bg-gray-900 text-gray-100">
       <ScrollNavbar />
@@ -71,112 +116,154 @@ export default function TestimonialsPage() {
               Client <span className="text-purple-500">Testimonials</span>
             </h1>
             <p className="text-gray-400 text-center max-w-2xl mx-auto mb-12">
-              Don't just take my word for it. Here's what clients and colleagues have to say about working with me.
+              Don&#39;t just take my word for it. Here&#39;s what clients and
+              colleagues have to say about working with me.
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {testimonials.map((testimonial, index) => (
                 <div
-                  key={index}
+                  key={`testimonial-${testimonial.name}-${index}`}
                   className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-all relative"
                 >
-                  <Quote className="absolute top-6 right-6 w-10 h-10 text-purple-500/20" />
+                  <Quote
+                    className="absolute top-6 right-6 w-10 h-10 text-purple-500/20"
+                    aria-hidden="true"
+                  />
 
                   <div className="flex items-center mb-6">
                     <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                      <img
-                        src={testimonial.avatar || "/placeholder.svg"}
-                        alt={testimonial.name}
-                        className="w-full h-full object-cover"
+                      <Image
+                        src={testimonial.avatar}
+                        alt={`${testimonial.name}'s profile picture`}
+                        width={48}
+                        height={48}
+                        className="object-cover"
                       />
                     </div>
                     <div>
-                      <h3 className="font-bold text-purple-400">{testimonial.name}</h3>
-                      <p className="text-sm text-gray-400">{testimonial.position}</p>
-                      <p className="text-xs text-gray-500">{testimonial.company}</p>
+                      <h2 className="font-bold text-purple-400">
+                        {testimonial.name}
+                      </h2>
+                      <p className="text-sm text-gray-400">
+                        {testimonial.position}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {testimonial.company}
+                      </p>
                     </div>
                   </div>
 
-                  <p className="text-gray-300 italic">"{testimonial.content}"</p>
+                  <blockquote>
+                    <p className="text-gray-300 italic">
+                      &#34;{testimonial.content}&#34;
+                    </p>
+                  </blockquote>
                 </div>
               ))}
             </div>
 
             <div className="mt-16 bg-gray-800 p-8 rounded-xl border border-gray-700">
-              <h2 className="text-2xl font-bold mb-6 text-center">Would you like to share your experience?</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center">
+                Would you like to share your experience?
+              </h2>
               <p className="text-gray-400 text-center mb-8">
-                If you've worked with me and would like to share your feedback, I'd love to hear from you.
+                If you&#39;ve worked with me and would like to share your
+                feedback, I&#39;d love to hear from you.
               </p>
 
-              <form className="max-w-2xl mx-auto space-y-6">
+              <form
+                action={handleSubmit}
+                className="max-w-2xl mx-auto space-y-6"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium mb-2"
+                    >
                       Your Name
                     </label>
-                    <input
+                    <Input
                       type="text"
                       id="name"
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      name="name"
+                      className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium mb-2"
+                    >
                       Your Email
                     </label>
-                    <input
+                    <Input
                       type="email"
                       id="email"
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      name="email"
+                      className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="position" className="block text-sm font-medium mb-2">
+                  <label
+                    htmlFor="position"
+                    className="block text-sm font-medium mb-2"
+                  >
                     Your Position
                   </label>
-                  <input
+                  <Input
                     type="text"
                     id="position"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    name="position"
+                    className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="company" className="block text-sm font-medium mb-2">
+                  <label
+                    htmlFor="company"
+                    className="block text-sm font-medium mb-2"
+                  >
                     Company Name
                   </label>
-                  <input
+                  <Input
                     type="text"
                     id="company"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    name="company"
+                    className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="testimonial" className="block text-sm font-medium mb-2">
+                  <label
+                    htmlFor="testimonial"
+                    className="block text-sm font-medium mb-2"
+                  >
                     Your Testimonial
                   </label>
-                  <textarea
+                  <Textarea
                     id="testimonial"
+                    name="testimonial"
                     rows={5}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                     required
-                  ></textarea>
+                  />
                 </div>
 
                 <div className="text-center">
-                  <button
+                  <Button
                     type="submit"
-                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-colors"
+                    className="bg-purple-600 hover:bg-purple-700"
                   >
                     Submit Testimonial
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -186,5 +273,5 @@ export default function TestimonialsPage() {
 
       <Footer />
     </main>
-  )
+  );
 }

@@ -1,21 +1,55 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Briefcase, FileText, Users, Eye, ThumbsUp, MessageSquare } from "lucide-react"
+import { useState, useEffect, JSX } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Briefcase,
+  FileText,
+  Users,
+  Eye,
+  ThumbsUp,
+  MessageSquare,
+  LucideIcon,
+} from "lucide-react";
 
-// Mock data for dashboard stats
-const stats = [
-  { name: "Total Projects", value: 24, icon: Briefcase, color: "bg-purple-500" },
+// Types
+interface DashboardStat {
+  name: string;
+  value: string | number;
+  icon: LucideIcon;
+  color: string;
+}
+
+interface Activity {
+  id: number;
+  type: "project" | "blog" | "testimonial";
+  action: "added" | "updated" | "approved";
+  name: string;
+  date: string;
+}
+
+// Mock data with proper typing
+const stats: DashboardStat[] = [
+  {
+    name: "Total Projects",
+    value: 24,
+    icon: Briefcase,
+    color: "bg-purple-500",
+  },
   { name: "Blog Posts", value: 18, icon: FileText, color: "bg-blue-500" },
   { name: "Testimonials", value: 42, icon: Users, color: "bg-green-500" },
   { name: "Total Views", value: "12.5K", icon: Eye, color: "bg-yellow-500" },
   { name: "Likes", value: 842, icon: ThumbsUp, color: "bg-red-500" },
   { name: "Comments", value: 156, icon: MessageSquare, color: "bg-cyan-500" },
-]
+];
 
-// Mock data for recent activities
-const recentActivities = [
+const recentActivities: Activity[] = [
   {
     id: 1,
     type: "project",
@@ -51,36 +85,72 @@ const recentActivities = [
     name: "Optimizing Performance in React Applications",
     date: "3 days ago",
   },
-]
+];
 
-export default function AdminDashboard() {
-  const [greeting, setGreeting] = useState("")
+export default function AdminDashboard(): JSX.Element {
+  const [greeting, setGreeting] = useState<string>("");
 
   useEffect(() => {
-    const hour = new Date().getHours()
-    if (hour < 12) setGreeting("Good morning")
-    else if (hour < 18) setGreeting("Good afternoon")
-    else setGreeting("Good evening")
-  }, [])
+    const getGreeting = (): string => {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Good morning";
+      if (hour < 18) return "Good afternoon";
+      return "Good evening";
+    };
+
+    setGreeting(getGreeting());
+  }, []);
+
+  const getActivityIcon = (type: Activity["type"]): JSX.Element => {
+    switch (type) {
+      case "project":
+        return <Briefcase className="h-4 w-4 text-white" />;
+      case "blog":
+        return <FileText className="h-4 w-4 text-white" />;
+      case "testimonial":
+        return <Users className="h-4 w-4 text-white" />;
+    }
+  };
+
+  const getActivityColor = (type: Activity["type"]): string => {
+    switch (type) {
+      case "project":
+        return "bg-purple-500";
+      case "blog":
+        return "bg-blue-500";
+      case "testimonial":
+        return "bg-green-500";
+    }
+  };
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-white">{greeting}, Admin</h1>
-        <p className="text-gray-400 mt-1">Here's what's happening with your portfolio today.</p>
+        <p className="text-gray-400 mt-1" role="status">
+          Here&#39;s what&#39;s happening with your portfolio today.
+        </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} className="bg-gray-800 border-gray-700">
+          <Card
+            key={`stat-${stat.name}-${index}`}
+            className="bg-gray-800 border-gray-700"
+          >
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className={`p-3 rounded-full ${stat.color} mr-4`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+                  <stat.icon
+                    className="h-6 w-6 text-white"
+                    aria-hidden="true"
+                  />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-400">{stat.name}</p>
+                  <p className="text-sm font-medium text-gray-400">
+                    {stat.name}
+                  </p>
                   <p className="text-2xl font-bold text-white">{stat.value}</p>
                 </div>
               </div>
@@ -93,35 +163,33 @@ export default function AdminDashboard() {
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white">Recent Activity</CardTitle>
-          <CardDescription className="text-gray-400">Your latest actions and updates</CardDescription>
+          <CardDescription className="text-gray-400">
+            Your latest actions and updates
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start">
+              <div key={`activity-${activity.id}`} className="flex items-start">
                 <div
-                  className={`p-2 rounded-full mr-4 ${
-                    activity.type === "project"
-                      ? "bg-purple-500"
-                      : activity.type === "blog"
-                        ? "bg-blue-500"
-                        : "bg-green-500"
-                  }`}
+                  className={`p-2 rounded-full mr-4 ${getActivityColor(
+                    activity.type
+                  )}`}
                 >
-                  {activity.type === "project" ? (
-                    <Briefcase className="h-4 w-4 text-white" />
-                  ) : activity.type === "blog" ? (
-                    <FileText className="h-4 w-4 text-white" />
-                  ) : (
-                    <Users className="h-4 w-4 text-white" />
-                  )}
+                  {getActivityIcon(activity.type)}
                 </div>
                 <div>
                   <p className="text-white">
-                    <span className="font-medium">You {activity.action}</span> {activity.type}{" "}
+                    <span className="font-medium">You {activity.action}</span>{" "}
+                    {activity.type}{" "}
                     <span className="font-medium">{activity.name}</span>
                   </p>
-                  <p className="text-sm text-gray-400">{activity.date}</p>
+                  <time
+                    dateTime={new Date().toISOString()}
+                    className="text-sm text-gray-400"
+                  >
+                    {activity.date}
+                  </time>
                 </div>
               </div>
             ))}
@@ -129,5 +197,5 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
