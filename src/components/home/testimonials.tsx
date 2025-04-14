@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { JSX, useRef } from "react"
-import { motion, useInView, Variants } from "framer-motion"
-import Image from "next/image"
-import Link from "next/link"
-import { Quote, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { JSX, useRef } from "react";
+import { motion, useInView, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { Quote, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Types
 interface Testimonial {
@@ -24,7 +24,7 @@ const containerVariants: Variants = {
       staggerChildren: 0.2,
     },
   },
-}
+};
 
 const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
@@ -33,33 +33,36 @@ const itemVariants: Variants = {
     opacity: 1,
     transition: { duration: 0.6 },
   },
-}
+};
 
 // Testimonials data
 const testimonials: Testimonial[] = [
   {
     name: "Sarah Johnson",
     position: "CEO at TechStart",
-    content: "Najim delivered an exceptional website that exceeded our expectations. His attention to detail and ability to translate our vision into reality was impressive.",
+    content:
+      "Najim delivered an exceptional website that exceeded our expectations. His attention to detail and ability to translate our vision into reality was impressive.",
     avatar: "/placeholder.svg?height=100&width=100",
   },
   {
     name: "Michael Chen",
     position: "Marketing Director",
-    content: "Working with Najim was a pleasure. He's not only technically skilled but also brings creative ideas to the table. Our conversion rates improved significantly after the redesign.",
+    content:
+      "Working with Najim was a pleasure. He's not only technically skilled but also brings creative ideas to the table. Our conversion rates improved significantly after the redesign.",
     avatar: "/placeholder.svg?height=100&width=100",
   },
   {
     name: "Emily Rodriguez",
     position: "Product Manager",
-    content: "Najim's expertise in front-end development helped us create a user-friendly interface that our customers love. He's responsive, professional, and delivers on time.",
+    content:
+      "Najim's expertise in front-end development helped us create a user-friendly interface that our customers love. He's responsive, professional, and delivers on time.",
     avatar: "/placeholder.svg?height=100&width=100",
   },
-]
+];
 
 export default function Testimonials(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, amount: 0.2 })
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
     <section id="testimonials" className="py-20 bg-gray-900">
@@ -83,12 +86,13 @@ export default function Testimonials(): JSX.Element {
                 variants={itemVariants}
                 whileHover={{
                   y: -10,
-                  boxShadow: "0 20px 25px -5px rgba(124, 58, 237, 0.1), 0 10px 10px -5px rgba(124, 58, 237, 0.04)",
+                  boxShadow:
+                    "0 20px 25px -5px rgba(124, 58, 237, 0.1), 0 10px 10px -5px rgba(124, 58, 237, 0.04)",
                 }}
                 className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-all relative"
               >
-                <Quote 
-                  className="absolute top-6 right-6 w-10 h-10 text-purple-500/20" 
+                <Quote
+                  className="absolute top-6 right-6 w-10 h-10 text-purple-500/20"
                   aria-hidden="true"
                 />
 
@@ -104,13 +108,19 @@ export default function Testimonials(): JSX.Element {
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-purple-400">{testimonial.name}</h3>
-                    <p className="text-sm text-gray-400">{testimonial.position}</p>
+                    <h3 className="font-bold text-purple-400">
+                      {testimonial.name}
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      {testimonial.position}
+                    </p>
                   </div>
                 </div>
 
                 <blockquote>
-                  <p className="text-gray-300 italic">&#34;{testimonial.content}&#34;</p>
+                  <p className="text-gray-300 italic">
+                    &#34;{testimonial.content}&#34;
+                  </p>
                 </blockquote>
               </motion.div>
             ))}
@@ -127,5 +137,5 @@ export default function Testimonials(): JSX.Element {
         </div>
       </div>
     </section>
-  )
+  );
 }

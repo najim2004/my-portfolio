@@ -1,13 +1,52 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { useInView } from "framer-motion"
-import { useRef } from "react"
+import { JSX, useRef } from "react"
+import { motion, useInView, Variants } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Github, Star, GitFork } from "lucide-react"
 
-// Mock data for GitHub stats
-const githubStats = {
+// Types
+interface GithubStats {
+  totalContributions: number;
+  followers: number;
+  following: number;
+  stars: number;
+  repos: number;
+}
+
+interface Repository {
+  name: string;
+  description: string;
+  stars: number;
+  forks: number;
+  language: string;
+  languageColor: string;
+}
+
+type ContributionMatrix = number[][];
+
+// Animation variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.5 },
+  },
+}
+
+// Mock data
+const githubStats: GithubStats = {
   totalContributions: 1243,
   followers: 156,
   following: 89,
@@ -15,7 +54,7 @@ const githubStats = {
   repos: 48,
 }
 
-const pinnedRepos = [
+const pinnedRepos: Repository[] = [
   {
     name: "next-portfolio",
     description: "A modern portfolio website built with Next.js and Tailwind CSS.",
@@ -50,42 +89,28 @@ const pinnedRepos = [
   },
 ]
 
-// Mock contribution data for the graph
-const contributionData = Array.from({ length: 52 }, () =>
-  Array.from({ length: 7 }, () => Math.floor(Math.random() * 5)),
+// Generate contribution data
+const contributionData: ContributionMatrix = Array.from({ length: 52 }, () =>
+  Array.from({ length: 7 }, () => Math.floor(Math.random() * 5))
 )
 
-export default function GithubStats() {
-  const ref = useRef(null)
+export default function GithubStats(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.1 })
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5 },
-    },
-  }
-
-  // Function to determine the color based on contribution count
-  const getContributionColor = (count) => {
+  const getContributionColor = (count: number): string => {
     if (count === 0) return "bg-gray-800"
     if (count === 1) return "bg-purple-900"
     if (count === 2) return "bg-purple-700"
     if (count === 3) return "bg-purple-600"
     return "bg-purple-500"
   }
+
+  const months: string[] = Array.from({ length: 12 }).map((_, i) => 
+    new Date(0, i).toLocaleString("default", { month: "short" })
+  )
+
+  const weekDays: string[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
   return (
     <section id="github-stats" className="py-20 bg-gray-900">
@@ -105,26 +130,17 @@ export default function GithubStats() {
           >
             {/* GitHub Stats Overview */}
             <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{githubStats.totalContributions}</p>
-                <p className="text-sm text-gray-400">Contributions</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{githubStats.repos}</p>
-                <p className="text-sm text-gray-400">Repositories</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{githubStats.stars}</p>
-                <p className="text-sm text-gray-400">Stars</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{githubStats.followers}</p>
-                <p className="text-sm text-gray-400">Followers</p>
-              </div>
-              <div className="bg-gray-800 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{githubStats.following}</p>
-                <p className="text-sm text-gray-400">Following</p>
-              </div>
+              {Object.entries(githubStats).map(([key, value]) => (
+                <div 
+                  key={key}
+                  className="bg-gray-800 rounded-lg p-4 text-center"
+                >
+                  <p className="text-3xl font-bold text-purple-400">{value}</p>
+                  <p className="text-sm text-gray-400">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </p>
+                </div>
+              ))}
             </motion.div>
 
             {/* Contribution Graph */}
@@ -133,15 +149,15 @@ export default function GithubStats() {
               <div className="overflow-x-auto">
                 <div className="min-w-[800px]">
                   <div className="flex justify-between mb-2">
-                    {Array.from({ length: 12 }).map((_, i) => (
+                    {months.map((month, i) => (
                       <span key={i} className="text-xs text-gray-400">
-                        {new Date(0, i).toLocaleString("default", { month: "short" })}
+                        {month}
                       </span>
                     ))}
                   </div>
                   <div className="flex">
                     <div className="flex flex-col justify-between mr-2">
-                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => (
+                      {weekDays.map((day, i) => (
                         <span key={i} className="text-xs text-gray-400 h-3">
                           {day}
                         </span>
@@ -155,22 +171,11 @@ export default function GithubStats() {
                               key={`${weekIndex}-${dayIndex}`}
                               className={`w-3 h-3 rounded-sm ${getContributionColor(day)}`}
                               title={`${day} contributions`}
-                            ></div>
+                            />
                           ))}
                         </div>
                       ))}
                     </div>
-                  </div>
-                  <div className="flex items-center justify-end mt-2 text-xs text-gray-400">
-                    <span>Less</span>
-                    <div className="flex mx-2">
-                      <div className="w-3 h-3 rounded-sm bg-gray-800 mx-0.5"></div>
-                      <div className="w-3 h-3 rounded-sm bg-purple-900 mx-0.5"></div>
-                      <div className="w-3 h-3 rounded-sm bg-purple-700 mx-0.5"></div>
-                      <div className="w-3 h-3 rounded-sm bg-purple-600 mx-0.5"></div>
-                      <div className="w-3 h-3 rounded-sm bg-purple-500 mx-0.5"></div>
-                    </div>
-                    <span>More</span>
                   </div>
                 </div>
               </div>
@@ -182,7 +187,7 @@ export default function GithubStats() {
               <div className="grid md:grid-cols-2 gap-4">
                 {pinnedRepos.map((repo, index) => (
                   <div
-                    key={index}
+                    key={`repo-${repo.name}-${index}`}
                     className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-purple-500/50 transition-all"
                   >
                     <div className="flex items-center mb-2">
@@ -215,9 +220,17 @@ export default function GithubStats() {
             </motion.div>
 
             <div className="flex justify-center">
-              <Button className="bg-gray-800 hover:bg-gray-700" asChild>
-                <a href="https://github.com/username" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-5 h-5 mr-2" />
+              <Button 
+                className="bg-gray-800 hover:bg-gray-700" 
+                asChild
+              >
+                <a 
+                  href="https://github.com/username" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center"
+                >
+                  <Github className="w-5 h-5 mr-2" aria-hidden="true" />
                   View GitHub Profile
                 </a>
               </Button>

@@ -1,40 +1,102 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { useInView } from "framer-motion"
-import { useRef } from "react"
+import { useRef, FormEvent, JSX } from "react"
+import { motion, useInView, Variants } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin, Github, Linkedin, Twitter } from "lucide-react"
 
-export default function Contact() {
-  const ref = useRef(null)
+// Types
+interface ContactFormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+interface SocialLink {
+  platform: string;
+  url: string;
+  icon: JSX.Element;
+}
+
+// Animation variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+}
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.6 },
+  },
+}
+
+// Social links data
+const socialLinks: SocialLink[] = [
+  {
+    platform: "GitHub",
+    url: "https://github.com/yourusername",
+    icon: <Github className="w-5 h-5" aria-hidden="true" />,
+  },
+  {
+    platform: "LinkedIn",
+    url: "https://linkedin.com/in/yourusername",
+    icon: <Linkedin className="w-5 h-5" aria-hidden="true" />,
+  },
+  {
+    platform: "Twitter",
+    url: "https://twitter.com/yourusername",
+    icon: <Twitter className="w-5 h-5" aria-hidden="true" />,
+  },
+]
+
+export default function Contact(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.2 })
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.6 },
-    },
-  }
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
-    // Handle form submission - would connect to API route in a real implementation
-    console.log("Form submitted")
+    
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    
+    const contactData: ContactFormData = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      subject: formData.get("subject") as string,
+      message: formData.get("message") as string,
+    }
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to send message")
+      }
+
+      // Reset form on success
+      form.reset()
+      alert("Message sent successfully!")
+    } catch (error) {
+      console.error("Error sending message:", error)
+      alert("Failed to send message. Please try again.")
+    }
   }
 
   return (
@@ -84,31 +146,23 @@ export default function Contact() {
 
               <h3 className="text-xl font-bold mb-4">Connect With Me</h3>
               <div className="flex space-x-4">
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                >
-                  <Github className="w-5 h-5" />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                >
-                  <Linkedin className="w-5 h-5" />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-purple-600 transition-colors"
-                >
-                  <Twitter className="w-5 h-5" />
-                </a>
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.platform}
+                    href={link.url}
+                    className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-purple-600 transition-colors"
+                    aria-label={link.platform}
+                  >
+                    {link.icon}
+                  </a>
+                ))}
               </div>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <h3 className="text-2xl font-bold mb-6 text-purple-400">Send Me a Message</h3>
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium">
@@ -116,8 +170,10 @@ export default function Contact() {
                     </label>
                     <Input
                       id="name"
+                      name="name"
                       placeholder="John Doe"
                       className="bg-gray-700 border-gray-600 focus:border-purple-500"
+                      required
                     />
                   </div>
 
@@ -127,9 +183,12 @@ export default function Contact() {
                     </label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       placeholder="john@example.com"
                       className="bg-gray-700 border-gray-600 focus:border-purple-500"
+                      required
+                      pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                     />
                   </div>
                 </div>
@@ -140,8 +199,10 @@ export default function Contact() {
                   </label>
                   <Input
                     id="subject"
+                    name="subject"
                     placeholder="Project Inquiry"
                     className="bg-gray-700 border-gray-600 focus:border-purple-500"
+                    required
                   />
                 </div>
 
@@ -151,8 +212,10 @@ export default function Contact() {
                   </label>
                   <Textarea
                     id="message"
+                    name="message"
                     placeholder="Your message here..."
                     className="bg-gray-700 border-gray-600 focus:border-purple-500 min-h-[150px]"
+                    required
                   />
                 </div>
 
