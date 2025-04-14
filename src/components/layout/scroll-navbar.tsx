@@ -1,42 +1,45 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { usePathname } from "next/navigation"
+import { useState, MouseEvent, JSX } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { usePathname } from "next/navigation";
 
-const navLinks = [
+interface NavLink {
+  name: string;
+  href: string;
+}
+
+const navLinks: NavLink[] = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Projects", href: "/projects" },
   { name: "Testimonials", href: "/testimonials" },
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "#contact" },
-]
+];
 
-export default function ScrollNavbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const pathname = usePathname()
-  const isHome = pathname === "/"
+export default function ScrollNavbar(): JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
-  const handleScrollToContact = (e) => {
-    e.preventDefault()
+  const handleScrollToContact = (e: MouseEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
 
-    // If on home page, scroll to contact section
     if (isHome) {
-      const contactSection = document.getElementById("contact")
+      const contactSection = document.getElementById("contact");
       if (contactSection) {
-        contactSection.scrollIntoView({ behavior: "smooth" })
-        setIsOpen(false)
+        contactSection.scrollIntoView({ behavior: "smooth" });
+        setIsOpen(false);
       }
     } else {
-      // If on another page, navigate to home and then scroll to contact
-      window.location.href = "/#contact"
+      window.location.href = "/#contact";
     }
-  }
+  };
 
   return (
     <motion.header
@@ -65,7 +68,10 @@ export default function ScrollNavbar() {
             <div className="ml-4">
               <ThemeToggle />
             </div>
-            <Button className="bg-purple-600 hover:bg-purple-700 ml-2" onClick={handleScrollToContact}>
+            <Button
+              className="bg-purple-600 hover:bg-purple-700 ml-2"
+              onClick={handleScrollToContact}
+            >
               Hire Me
             </Button>
           </nav>
@@ -107,7 +113,10 @@ export default function ScrollNavbar() {
                   {link.name}
                 </Link>
               ))}
-              <Button className="bg-purple-600 hover:bg-purple-700 w-full" onClick={handleScrollToContact}>
+              <Button
+                className="bg-purple-600 hover:bg-purple-700 w-full"
+                onClick={handleScrollToContact}
+              >
                 Hire Me
               </Button>
             </div>
@@ -115,5 +124,5 @@ export default function ScrollNavbar() {
         )}
       </AnimatePresence>
     </motion.header>
-  )
+  );
 }

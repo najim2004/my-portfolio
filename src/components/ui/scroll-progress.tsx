@@ -1,31 +1,41 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { motion, useScroll } from "framer-motion"
+import { JSX, useEffect, useState } from "react";
+import { motion, useScroll, MotionStyle } from "framer-motion";
 
-export default function ScrollProgress() {
-  const { scrollYProgress } = useScroll()
-  const [isVisible, setIsVisible] = useState(false)
+interface ScrollProgressProps {
+  threshold?: number;
+}
+
+export default function ScrollProgress({
+  threshold = 100,
+}: ScrollProgressProps): JSX.Element | null {
+  const { scrollYProgress } = useScroll();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 100) {
-        setIsVisible(true)
+    const handleScroll = (): void => {
+      if (window.scrollY > threshold) {
+        setIsVisible(true);
       } else {
-        setIsVisible(false)
+        setIsVisible(false);
       }
-    }
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [threshold]);
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
+
+  const progressStyle: MotionStyle = {
+    scaleX: scrollYProgress,
+  };
 
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 h-1 bg-purple-500 z-50 origin-left"
-      style={{ scaleX: scrollYProgress }}
+      className="fixed top-0 left-0 right-0 h-1 bg-purple-500 z-[60] origin-left"
+      style={progressStyle}
     />
-  )
+  );
 }
