@@ -1,20 +1,73 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Upload, Plus, X, Save, Pencil } from "lucide-react"
-import dynamic from "next/dynamic"
-import { Badge } from "@/components/ui/badge"
+import { useState, ChangeEvent, JSX } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { Upload, Plus, X, Save, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
-// Dynamically import the rich text editor to avoid SSR issues
-const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false })
+export interface Education {
+  id: string;
+  degree: string;
+  institution: string;
+  years: string;
+}
 
-// Mock data - in a real app, this would come from your database
+export interface Experience {
+  id: string;
+  position: string;
+  company: string;
+  years: string;
+  description: string;
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  level: number;
+}
+
+export interface Service {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface SocialLinks {
+  github: string;
+  linkedin: string;
+  twitter: string;
+}
+
+export interface Profile {
+  name: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  freelance: string;
+  about: string;
+  education: Education[];
+  experience: Experience[];
+  skills: Skill[];
+  services: Service[];
+  social: SocialLinks;
+}
+
 const initialProfile = {
   name: "Najim",
   title: "Full Stack Developer",
@@ -64,37 +117,43 @@ const initialProfile = {
     {
       id: "1",
       title: "Web Development",
-      description: "Custom websites and web applications built with modern technologies and best practices.",
+      description:
+        "Custom websites and web applications built with modern technologies and best practices.",
       icon: "Code",
     },
     {
       id: "2",
       title: "UI/UX Design",
-      description: "User-centered design solutions that are both beautiful and functional.",
+      description:
+        "User-centered design solutions that are both beautiful and functional.",
       icon: "Figma",
     },
     {
       id: "3",
       title: "Mobile Development",
-      description: "Native and cross-platform mobile applications for iOS and Android.",
+      description:
+        "Native and cross-platform mobile applications for iOS and Android.",
       icon: "Smartphone",
     },
     {
       id: "4",
       title: "SEO Optimization",
-      description: "Improve your website's visibility and ranking in search engine results.",
+      description:
+        "Improve your website's visibility and ranking in search engine results.",
       icon: "Globe",
     },
     {
       id: "5",
       title: "Performance Optimization",
-      description: "Speed up your website and improve user experience with performance optimizations.",
+      description:
+        "Speed up your website and improve user experience with performance optimizations.",
       icon: "Zap",
     },
     {
       id: "6",
       title: "API Development",
-      description: "Custom API development and integration with third-party services.",
+      description:
+        "Custom API development and integration with third-party services.",
       icon: "Sparkles",
     },
   ],
@@ -103,168 +162,229 @@ const initialProfile = {
     linkedin: "https://linkedin.com/in/username",
     twitter: "https://twitter.com/username",
   },
-}
+};
 
-export default function ProfilePage() {
-  const [profile, setProfile] = useState(initialProfile)
-  const [activeTab, setActiveTab] = useState("personal")
-  const [newSkill, setNewSkill] = useState({ name: "", category: "", level: 75 })
-  const [newEducation, setNewEducation] = useState({
+// Dynamically import the rich text editor
+const RichTextEditor = dynamic(
+  () => import("@/components/ui/rich-text-editor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[400px] bg-gray-700 rounded-md animate-pulse" />
+    ),
+  }
+);
+
+export default function ProfilePage(): JSX.Element {
+  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [activeTab, setActiveTab] = useState<string>("personal");
+  const [newSkill, setNewSkill] = useState<Omit<Skill, "id">>({
+    name: "",
+    category: "",
+    level: 75,
+  });
+  const [newEducation, setNewEducation] = useState<Omit<Education, "id">>({
     degree: "",
     institution: "",
     years: "",
-  })
-  const [newExperience, setNewExperience] = useState({
+  });
+  const [newExperience, setNewExperience] = useState<Omit<Experience, "id">>({
     position: "",
     company: "",
     years: "",
     description: "",
-  })
-  const [newService, setNewService] = useState({
+  });
+  const [newService, setNewService] = useState<Omit<Service, "id">>({
     title: "",
     description: "",
     icon: "",
-  })
-  const [editingService, setEditingService] = useState(null)
+  });
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handlePersonalChange = (e) => {
-    const { name, value } = e.target
-    setProfile((prev) => ({ ...prev, [name]: value }))
-  }
+  const handlePersonalChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleAboutChange = (content) => {
-    setProfile((prev) => ({ ...prev, about: content }))
-  }
+  const handleAboutChange = (content: string): void => {
+    setProfile((prev) => ({ ...prev, about: content }));
+  };
 
-  const handleSocialChange = (e) => {
-    const { name, value } = e.target
+  const handleSocialChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
     setProfile((prev) => ({
       ...prev,
       social: { ...prev.social, [name]: value },
-    }))
-  }
+    }));
+  };
 
-  const handleAddSkill = () => {
+  const handleAddSkill = (): void => {
     if (newSkill.name && newSkill.category) {
-      const id = Date.now().toString()
+      const id = crypto.randomUUID();
       setProfile((prev) => ({
         ...prev,
         skills: [...prev.skills, { ...newSkill, id }],
-      }))
-      setNewSkill({ name: "", category: "", level: 75 })
+      }));
+      setNewSkill({ name: "", category: "", level: 75 });
     }
-  }
+  };
 
-  const handleRemoveSkill = (id) => {
+  const handleRemoveSkill = (id: string): void => {
     setProfile((prev) => ({
       ...prev,
       skills: prev.skills.filter((skill) => skill.id !== id),
-    }))
-  }
+    }));
+  };
 
-  const handleAddEducation = () => {
+  const handleAddEducation = (): void => {
     if (newEducation.degree && newEducation.institution && newEducation.years) {
-      const id = Date.now().toString()
+      const id = crypto.randomUUID();
       setProfile((prev) => ({
         ...prev,
         education: [...prev.education, { ...newEducation, id }],
-      }))
-      setNewEducation({ degree: "", institution: "", years: "" })
+      }));
+      setNewEducation({ degree: "", institution: "", years: "" });
     }
-  }
+  };
 
-  const handleRemoveEducation = (id) => {
+  const handleRemoveEducation = (id: string): void => {
     setProfile((prev) => ({
       ...prev,
       education: prev.education.filter((edu) => edu.id !== id),
-    }))
-  }
+    }));
+  };
 
-  const handleAddExperience = () => {
-    if (newExperience.position && newExperience.company && newExperience.years) {
-      const id = Date.now().toString()
+  const handleAddExperience = (): void => {
+    if (
+      newExperience.position &&
+      newExperience.company &&
+      newExperience.years
+    ) {
+      const id = crypto.randomUUID();
       setProfile((prev) => ({
         ...prev,
         experience: [...prev.experience, { ...newExperience, id }],
-      }))
+      }));
       setNewExperience({
         position: "",
         company: "",
         years: "",
         description: "",
-      })
+      });
     }
-  }
+  };
 
-  const handleRemoveExperience = (id) => {
+  const handleRemoveExperience = (id: string): void => {
     setProfile((prev) => ({
       ...prev,
       experience: prev.experience.filter((exp) => exp.id !== id),
-    }))
-  }
+    }));
+  };
 
-  const handleAddService = () => {
+  const handleAddService = (): void => {
     if (newService.title && newService.description && newService.icon) {
-      const id = Date.now().toString()
+      const id = crypto.randomUUID();
       setProfile((prev) => ({
         ...prev,
         services: [...prev.services, { ...newService, id }],
-      }))
-      setNewService({ title: "", description: "", icon: "" })
+      }));
+      setNewService({ title: "", description: "", icon: "" });
     }
-  }
+  };
 
-  const handleUpdateService = () => {
-    if (editingService && editingService.title && editingService.description && editingService.icon) {
+  const handleUpdateService = (): void => {
+    if (
+      editingService &&
+      editingService.title &&
+      editingService.description &&
+      editingService.icon
+    ) {
       setProfile((prev) => ({
         ...prev,
-        services: prev.services.map((service) => (service.id === editingService.id ? editingService : service)),
-      }))
-      setEditingService(null)
+        services: prev.services.map((service) =>
+          service.id === editingService.id ? editingService : service
+        ),
+      }));
+      setEditingService(null);
     }
-  }
+  };
 
-  const handleRemoveService = (id) => {
+  const handleRemoveService = (id: string): void => {
     setProfile((prev) => ({
       ...prev,
       services: prev.services.filter((service) => service.id !== id),
-    }))
-  }
+    }));
+  };
 
-  const handleSaveProfile = () => {
-    // In a real app, you would save the profile to your database
-    console.log("Saving profile:", profile)
-    alert("Profile saved successfully!")
-  }
+  const handleSaveProfile = async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+      // In a real app, make an API call here
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Saving profile:", profile);
+      // Show success toast
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      // Show error toast
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-white">Profile</h1>
-        <Button onClick={handleSaveProfile} className="bg-purple-600 hover:bg-purple-700">
+        <Button
+          onClick={handleSaveProfile}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
           <Save className="mr-2 h-4 w-4" />
           Save Changes
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="bg-gray-700 border-gray-600">
-          <TabsTrigger value="personal" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="personal"
+            className="data-[state=active]:bg-purple-600"
+          >
             Personal Info
           </TabsTrigger>
-          <TabsTrigger value="about" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="about"
+            className="data-[state=active]:bg-purple-600"
+          >
             About Me
           </TabsTrigger>
-          <TabsTrigger value="skills" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="skills"
+            className="data-[state=active]:bg-purple-600"
+          >
             Skills
           </TabsTrigger>
-          <TabsTrigger value="education" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="education"
+            className="data-[state=active]:bg-purple-600"
+          >
             Education
           </TabsTrigger>
-          <TabsTrigger value="experience" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="experience"
+            className="data-[state=active]:bg-purple-600"
+          >
             Experience
           </TabsTrigger>
-          <TabsTrigger value="services" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="services"
+            className="data-[state=active]:bg-purple-600"
+          >
             Services
           </TabsTrigger>
         </TabsList>
@@ -366,17 +486,21 @@ export default function ProfilePage() {
                   <Label className="text-white">Profile Image</Label>
                   <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center">
                     <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-400 mb-2">Drag and drop an image, or click to browse</p>
+                    <p className="text-sm text-gray-400 mb-2">
+                      Drag and drop an image, or click to browse
+                    </p>
                     <Button type="button" variant="outline" size="sm">
                       Upload Image
                     </Button>
                     <div className="mt-4">
                       <p className="text-sm text-gray-400">Current image:</p>
                       <div className="mt-2 relative w-32 h-32 mx-auto">
-                        <img
+                        <Image
                           src="/placeholder.svg?height=100&width=100"
                           alt="Profile"
                           className="rounded-full w-full h-full object-cover"
+                          width={100}
+                          height={100}
                         />
                       </div>
                     </div>
@@ -434,7 +558,9 @@ export default function ProfilePage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">About Me</CardTitle>
-              <CardDescription className="text-gray-400">Update your bio and personal description.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Update your bio and personal description.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -456,7 +582,9 @@ export default function ProfilePage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Skills</CardTitle>
-              <CardDescription className="text-gray-400">Manage your skills and expertise.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Manage your skills and expertise.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -468,7 +596,9 @@ export default function ProfilePage() {
                     <Input
                       id="skillName"
                       value={newSkill.name}
-                      onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+                      onChange={(e) =>
+                        setNewSkill({ ...newSkill, name: e.target.value })
+                      }
                       placeholder="E.g., JavaScript"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -480,7 +610,9 @@ export default function ProfilePage() {
                     <Input
                       id="skillCategory"
                       value={newSkill.category}
-                      onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
+                      onChange={(e) =>
+                        setNewSkill({ ...newSkill, category: e.target.value })
+                      }
                       placeholder="E.g., Frontend"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -495,12 +627,20 @@ export default function ProfilePage() {
                       min="0"
                       max="100"
                       value={newSkill.level}
-                      onChange={(e) => setNewSkill({ ...newSkill, level: Number.parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setNewSkill({
+                          ...newSkill,
+                          level: Number.parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="bg-gray-700 border-gray-600 text-white"
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddSkill} className="bg-purple-600 hover:bg-purple-700">
+                <Button
+                  onClick={handleAddSkill}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Skill
                 </Button>
@@ -510,16 +650,28 @@ export default function ProfilePage() {
                 <Label className="text-white">Current Skills</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {profile.skills.map((skill) => (
-                    <div key={skill.id} className="flex items-center justify-between bg-gray-700 p-3 rounded-md">
+                    <div
+                      key={skill.id}
+                      className="flex items-center justify-between bg-gray-700 p-3 rounded-md"
+                    >
                       <div className="space-y-1">
                         <div className="flex items-center">
-                          <span className="font-medium text-white">{skill.name}</span>
-                          <Badge className="ml-2 bg-gray-600 text-white">{skill.category}</Badge>
+                          <span className="font-medium text-white">
+                            {skill.name}
+                          </span>
+                          <Badge className="ml-2 bg-gray-600 text-white">
+                            {skill.category}
+                          </Badge>
                         </div>
                         <div className="w-full bg-gray-600 rounded-full h-2">
-                          <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${skill.level}%` }}></div>
+                          <div
+                            className="bg-purple-600 h-2 rounded-full"
+                            style={{ width: `${skill.level}%` }}
+                          ></div>
                         </div>
-                        <span className="text-xs text-gray-400">{skill.level}%</span>
+                        <span className="text-xs text-gray-400">
+                          {skill.level}%
+                        </span>
                       </div>
                       <Button
                         variant="ghost"
@@ -542,7 +694,9 @@ export default function ProfilePage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Education</CardTitle>
-              <CardDescription className="text-gray-400">Manage your educational background.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Manage your educational background.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -554,7 +708,12 @@ export default function ProfilePage() {
                     <Input
                       id="degree"
                       value={newEducation.degree}
-                      onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })}
+                      onChange={(e) =>
+                        setNewEducation({
+                          ...newEducation,
+                          degree: e.target.value,
+                        })
+                      }
                       placeholder="E.g., Bachelor of Science in Computer Science"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -566,7 +725,12 @@ export default function ProfilePage() {
                     <Input
                       id="institution"
                       value={newEducation.institution}
-                      onChange={(e) => setNewEducation({ ...newEducation, institution: e.target.value })}
+                      onChange={(e) =>
+                        setNewEducation({
+                          ...newEducation,
+                          institution: e.target.value,
+                        })
+                      }
                       placeholder="E.g., University of California, Berkeley"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -578,13 +742,21 @@ export default function ProfilePage() {
                     <Input
                       id="years"
                       value={newEducation.years}
-                      onChange={(e) => setNewEducation({ ...newEducation, years: e.target.value })}
+                      onChange={(e) =>
+                        setNewEducation({
+                          ...newEducation,
+                          years: e.target.value,
+                        })
+                      }
                       placeholder="E.g., 2015-2019"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddEducation} className="bg-purple-600 hover:bg-purple-700">
+                <Button
+                  onClick={handleAddEducation}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Education
                 </Button>
@@ -594,10 +766,17 @@ export default function ProfilePage() {
                 <Label className="text-white">Education History</Label>
                 <div className="space-y-4">
                   {profile.education.map((edu) => (
-                    <div key={edu.id} className="flex items-start justify-between bg-gray-700 p-4 rounded-md">
+                    <div
+                      key={edu.id}
+                      className="flex items-start justify-between bg-gray-700 p-4 rounded-md"
+                    >
                       <div className="space-y-1">
-                        <div className="font-medium text-white">{edu.degree}</div>
-                        <div className="text-sm text-gray-400">{edu.institution}</div>
+                        <div className="font-medium text-white">
+                          {edu.degree}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {edu.institution}
+                        </div>
                         <div className="text-xs text-gray-500">{edu.years}</div>
                       </div>
                       <Button
@@ -621,7 +800,9 @@ export default function ProfilePage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Experience</CardTitle>
-              <CardDescription className="text-gray-400">Manage your work experience.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Manage your work experience.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -633,7 +814,12 @@ export default function ProfilePage() {
                     <Input
                       id="position"
                       value={newExperience.position}
-                      onChange={(e) => setNewExperience({ ...newExperience, position: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          position: e.target.value,
+                        })
+                      }
                       placeholder="E.g., Senior Frontend Developer"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -645,7 +831,12 @@ export default function ProfilePage() {
                     <Input
                       id="company"
                       value={newExperience.company}
-                      onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          company: e.target.value,
+                        })
+                      }
                       placeholder="E.g., TechCorp Inc."
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -659,7 +850,12 @@ export default function ProfilePage() {
                     <Input
                       id="expYears"
                       value={newExperience.years}
-                      onChange={(e) => setNewExperience({ ...newExperience, years: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          years: e.target.value,
+                        })
+                      }
                       placeholder="E.g., 2021-Present"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
@@ -671,13 +867,21 @@ export default function ProfilePage() {
                     <Input
                       id="description"
                       value={newExperience.description}
-                      onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          description: e.target.value,
+                        })
+                      }
                       placeholder="E.g., Lead development of company's flagship web application"
                       className="bg-gray-700 border-gray-600 text-white"
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddExperience} className="bg-purple-600 hover:bg-purple-700">
+                <Button
+                  onClick={handleAddExperience}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Experience
                 </Button>
@@ -687,12 +891,21 @@ export default function ProfilePage() {
                 <Label className="text-white">Work History</Label>
                 <div className="space-y-4">
                   {profile.experience.map((exp) => (
-                    <div key={exp.id} className="flex items-start justify-between bg-gray-700 p-4 rounded-md">
+                    <div
+                      key={exp.id}
+                      className="flex items-start justify-between bg-gray-700 p-4 rounded-md"
+                    >
                       <div className="space-y-1">
-                        <div className="font-medium text-white">{exp.position}</div>
-                        <div className="text-sm text-gray-400">{exp.company}</div>
+                        <div className="font-medium text-white">
+                          {exp.position}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {exp.company}
+                        </div>
                         <div className="text-xs text-gray-500">{exp.years}</div>
-                        <div className="text-sm text-gray-300">{exp.description}</div>
+                        <div className="text-sm text-gray-300">
+                          {exp.description}
+                        </div>
                       </div>
                       <Button
                         variant="ghost"
@@ -715,7 +928,9 @@ export default function ProfilePage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Services</CardTitle>
-              <CardDescription className="text-gray-400">Manage the services you provide.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Manage the services you provide.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {editingService ? (
@@ -728,7 +943,12 @@ export default function ProfilePage() {
                       <Input
                         id="serviceTitle"
                         value={editingService.title}
-                        onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
+                        onChange={(e) =>
+                          setEditingService({
+                            ...editingService,
+                            title: e.target.value,
+                          })
+                        }
                         className="bg-gray-700 border-gray-600 text-white"
                       />
                     </div>
@@ -739,7 +959,12 @@ export default function ProfilePage() {
                       <Input
                         id="serviceIcon"
                         value={editingService.icon}
-                        onChange={(e) => setEditingService({ ...editingService, icon: e.target.value })}
+                        onChange={(e) =>
+                          setEditingService({
+                            ...editingService,
+                            icon: e.target.value,
+                          })
+                        }
                         placeholder="E.g., Code, Figma, Smartphone"
                         className="bg-gray-700 border-gray-600 text-white"
                       />
@@ -752,15 +977,26 @@ export default function ProfilePage() {
                     <Textarea
                       id="serviceDescription"
                       value={editingService.description}
-                      onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                      onChange={(e) =>
+                        setEditingService({
+                          ...editingService,
+                          description: e.target.value,
+                        })
+                      }
                       className="bg-gray-700 border-gray-600 text-white resize-none h-20"
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleUpdateService} className="bg-purple-600 hover:bg-purple-700">
+                    <Button
+                      onClick={handleUpdateService}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
                       Update Service
                     </Button>
-                    <Button variant="outline" onClick={() => setEditingService(null)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditingService(null)}
+                    >
                       Cancel
                     </Button>
                   </div>
@@ -775,7 +1011,12 @@ export default function ProfilePage() {
                       <Input
                         id="serviceTitle"
                         value={newService.title}
-                        onChange={(e) => setNewService({ ...newService, title: e.target.value })}
+                        onChange={(e) =>
+                          setNewService({
+                            ...newService,
+                            title: e.target.value,
+                          })
+                        }
                         placeholder="E.g., Web Development"
                         className="bg-gray-700 border-gray-600 text-white"
                       />
@@ -787,7 +1028,9 @@ export default function ProfilePage() {
                       <Input
                         id="serviceIcon"
                         value={newService.icon}
-                        onChange={(e) => setNewService({ ...newService, icon: e.target.value })}
+                        onChange={(e) =>
+                          setNewService({ ...newService, icon: e.target.value })
+                        }
                         placeholder="E.g., Code, Figma, Smartphone"
                         className="bg-gray-700 border-gray-600 text-white"
                       />
@@ -800,12 +1043,20 @@ export default function ProfilePage() {
                     <Textarea
                       id="serviceDescription"
                       value={newService.description}
-                      onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                      onChange={(e) =>
+                        setNewService({
+                          ...newService,
+                          description: e.target.value,
+                        })
+                      }
                       placeholder="Describe the service you provide"
                       className="bg-gray-700 border-gray-600 text-white resize-none h-20"
                     />
                   </div>
-                  <Button onClick={handleAddService} className="bg-purple-600 hover:bg-purple-700">
+                  <Button
+                    onClick={handleAddService}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Service
                   </Button>
@@ -822,7 +1073,9 @@ export default function ProfilePage() {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-                          <span className="text-purple-500">{service.icon}</span>
+                          <span className="text-purple-500">
+                            {service.icon}
+                          </span>
                         </div>
                         <div className="flex gap-1">
                           <Button
@@ -843,8 +1096,12 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                       </div>
-                      <h3 className="font-bold text-white mb-1">{service.title}</h3>
-                      <p className="text-sm text-gray-300">{service.description}</p>
+                      <h3 className="font-bold text-white mb-1">
+                        {service.title}
+                      </h3>
+                      <p className="text-sm text-gray-300">
+                        {service.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -854,5 +1111,5 @@ export default function ProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

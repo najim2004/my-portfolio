@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent, JSX } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,13 +20,26 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 
-// Dynamically import the rich text editor to avoid SSR issues
-const RichTextEditor = dynamic(
-  () => import("@/components/ui/rich-text-editor"),
-  { ssr: false }
-);
+export interface Project {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  fullDescription: string;
+  image: string;
+  technologies: string[];
+  features: string[];
+  liveLink: string;
+  githubLink: string;
+  date: string;
+}
 
-// Mock data - in a real app, this would come from your database
+export interface ProjectFormProps {
+  params: {
+    id: string;
+  };
+}
+
 const initialProjects = [
   {
     id: "1",
@@ -82,54 +96,79 @@ const initialProjects = [
     date: "April 2023",
   },
 ];
+// Dynamically import the rich text editor
+const RichTextEditor = dynamic(
+  () => import("@/components/ui/rich-text-editor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[400px] bg-gray-700 rounded-md animate-pulse" />
+    ),
+  }
+);
 
-export default function ProjectForm({ params }) {
+const emptyProject: Project = {
+  id: "",
+  slug: "",
+  title: "",
+  description: "",
+  fullDescription: "",
+  image: "/placeholder.svg?height=400&width=600",
+  technologies: [],
+  features: [],
+  liveLink: "",
+  githubLink: "",
+  date: new Date().toISOString().split("T")[0],
+};
+
+export default function ProjectForm({ params }: ProjectFormProps): JSX.Element {
   const router = useRouter();
-  const { id } = use(params);
-  const isNew = id === "new";
-  const projectId = id;
+  const isNew = params.id === "new";
+  const projectId = params.id;
 
-  const emptyProject = {
-    id: "",
-    slug: "",
-    title: "",
-    description: "",
-    fullDescription: "",
-    image: "/placeholder.svg?height=400&width=600",
-    technologies: [],
-    features: [],
-    liveLink: "",
-    githubLink: "",
-    date: new Date().toISOString().split("T")[0],
-  };
-
-  const [project, setProject] = useState(emptyProject);
-  const [newTag, setNewTag] = useState("");
-  const [newFeature, setNewFeature] = useState("");
-  const [loading, setLoading] = useState(!isNew);
+  const [project, setProject] = useState<Project>(emptyProject);
+  const [newTag, setNewTag] = useState<string>("");
+  const [newFeature, setNewFeature] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(!isNew);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!isNew) {
-      // In a real app, you would fetch the project from your API
       const foundProject = initialProjects.find((p) => p.id === projectId);
       if (foundProject) {
         setProject(foundProject);
+      } else {
+        router.push("/404");
       }
       setLoading(false);
     }
-  }, [isNew, projectId]);
+  }, [isNew, projectId, router]);
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
     const { name, value } = e.target;
     setProject((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRichTextChange = (content) => {
+  const handleRichTextChange = (content: string): void => {
     setProject((prev) => ({ ...prev, fullDescription: content }));
   };
 
-  const handleAddTag = () => {
-    if (newTag.trim() !== "" && !project.technologies.includes(newTag.trim())) {
+  const handleImageUpload = async (
+    e: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // In a real app, you would upload to your storage service
+      // const imageUrl = await uploadImage(file)
+      // setProject(prev => ({ ...prev, image: imageUrl }))
+    }
+  };
+
+  const handleAddTag = (): void => {
+    if (newTag.trim() && !project.technologies.includes(newTag.trim())) {
       setProject((prev) => ({
         ...prev,
         technologies: [...prev.technologies, newTag.trim()],
@@ -138,18 +177,15 @@ export default function ProjectForm({ params }) {
     }
   };
 
-  const handleRemoveTag = (tagToRemove) => {
+  const handleRemoveTag = (tagToRemove: string): void => {
     setProject((prev) => ({
       ...prev,
       technologies: prev.technologies.filter((tag) => tag !== tagToRemove),
     }));
   };
 
-  const handleAddFeature = () => {
-    if (
-      newFeature.trim() !== "" &&
-      !project.features.includes(newFeature.trim())
-    ) {
+  const handleAddFeature = (): void => {
+    if (newFeature.trim() && !project.features.includes(newFeature.trim())) {
       setProject((prev) => ({
         ...prev,
         features: [...prev.features, newFeature.trim()],
@@ -158,27 +194,39 @@ export default function ProjectForm({ params }) {
     }
   };
 
-  const handleRemoveFeature = (featureToRemove) => {
+  const handleRemoveFeature = (featureToRemove: string): void => {
     setProject((prev) => ({
       ...prev,
       features: prev.features.filter((feature) => feature !== featureToRemove),
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    setLoading(true);
 
-    // In a real app, you would save the project to your database
-    console.log("Saving project:", project);
-
-    // Navigate back to the projects list
-    router.push("/admin/dashboard/projects");
+    try {
+      // In a real app, you would save to your database
+      console.log("Saving project:", project);
+      router.push("/admin/dashboard/projects");
+    } catch (error) {
+      console.error("Error saving project:", error);
+      // Handle error (show toast notification, etc.)
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"
+          role="status"
+          aria-label="Loading"
+        >
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -313,6 +361,12 @@ export default function ProjectForm({ params }) {
                 <p className="text-sm text-gray-400 mb-2">
                   Drag and drop an image, or click to browse
                 </p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <Button type="button" variant="outline" size="sm">
                   Upload Image
                 </Button>
@@ -320,9 +374,11 @@ export default function ProjectForm({ params }) {
                   <div className="mt-4">
                     <p className="text-sm text-gray-400">Current image:</p>
                     <div className="mt-2 relative w-full max-w-xs mx-auto">
-                      <img
+                      <Image
                         src={project.image || "/placeholder.svg"}
                         alt="Project preview"
+                        width={600}
+                        height={400}
                         className="rounded-md w-full h-auto"
                       />
                     </div>

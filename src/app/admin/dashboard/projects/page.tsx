@@ -1,10 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { JSX, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +27,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,18 +35,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Plus, Search, MoreHorizontal, Pencil, Trash, ExternalLink } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Pencil,
+  Trash,
+  ExternalLink,
+} from "lucide-react";
 
-// Mock data - in a real app, this would come from your database
-const initialProjects = [
+export interface Project {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image: string;
+  tags: string[];
+  liveLink: string;
+  githubLink: string;
+  date: string;
+}
+
+const initialProjects: Project[] = [
   {
     id: "1",
     slug: "e-commerce-platform",
     title: "E-Commerce Platform",
-    description: "A fully responsive e-commerce platform with product filtering and cart functionality.",
+    description:
+      "A fully responsive e-commerce platform with product filtering and cart functionality.",
     image: "/placeholder.svg?height=400&width=600",
     tags: ["Next.js", "MongoDB", "Tailwind CSS", "Stripe"],
     liveLink: "#",
@@ -42,7 +74,8 @@ const initialProjects = [
     id: "2",
     slug: "admin-dashboard",
     title: "Admin Dashboard",
-    description: "An admin dashboard with data visualization, user management, and dark mode.",
+    description:
+      "An admin dashboard with data visualization, user management, and dark mode.",
     image: "/placeholder.svg?height=400&width=600",
     tags: ["React", "Chart.js", "Tailwind CSS", "Redux"],
     liveLink: "#",
@@ -53,7 +86,8 @@ const initialProjects = [
     id: "3",
     slug: "social-media-app",
     title: "Social Media App",
-    description: "A social platform with real-time messaging, post creation, and user profiles.",
+    description:
+      "A social platform with real-time messaging, post creation, and user profiles.",
     image: "/placeholder.svg?height=400&width=600",
     tags: ["Next.js", "MongoDB", "Socket.io", "Tailwind CSS"],
     liveLink: "#",
@@ -64,41 +98,52 @@ const initialProjects = [
     id: "4",
     slug: "portfolio-website",
     title: "Portfolio Website",
-    description: "A creative portfolio for a digital artist with image gallery and contact form.",
+    description:
+      "A creative portfolio for a digital artist with image gallery and contact form.",
     image: "/placeholder.svg?height=400&width=600",
     tags: ["Next.js", "Framer Motion", "Tailwind CSS", "Sanity.io"],
     liveLink: "#",
     githubLink: "#",
     date: "September 2023",
   },
-]
+];
 
-export default function ProjectsPage() {
-  const [projects, setProjects] = useState(initialProjects)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [projectToDelete, setProjectToDelete] = useState(null)
-  const router = useRouter()
+export default function ProjectsPage(): JSX.Element {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const router = useRouter();
 
   const filteredProjects = projects.filter(
     (project) =>
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+      project.tags.some((tag: string) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+  );
 
-  const handleDeleteClick = (project) => {
-    setProjectToDelete(project)
-    setDeleteDialogOpen(true)
-  }
+  const handleDeleteClick = (project: Project): void => {
+    setProjectToDelete(project);
+    setDeleteDialogOpen(true);
+  };
 
-  const confirmDelete = () => {
+  const confirmDelete = async (): Promise<void> => {
     if (projectToDelete) {
-      setProjects(projects.filter((project) => project.id !== projectToDelete.id))
-      setDeleteDialogOpen(false)
-      setProjectToDelete(null)
+      try {
+        // In a real app, this would be an API call
+        setProjects((prevProjects) =>
+          prevProjects.filter((project) => project.id !== projectToDelete.id)
+        );
+        setDeleteDialogOpen(false);
+        setProjectToDelete(null);
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        // Handle error (show toast notification, etc.)
+      }
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -112,7 +157,9 @@ export default function ProjectsPage() {
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white">Manage Projects</CardTitle>
-          <CardDescription className="text-gray-400">View and manage all your portfolio projects.</CardDescription>
+          <CardDescription className="text-gray-400">
+            View and manage all your portfolio projects.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
@@ -135,25 +182,40 @@ export default function ProjectsPage() {
                   <TableHead className="text-gray-400">Title</TableHead>
                   <TableHead className="text-gray-400">Date</TableHead>
                   <TableHead className="text-gray-400">Tags</TableHead>
-                  <TableHead className="text-gray-400 text-right">Actions</TableHead>
+                  <TableHead className="text-gray-400 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProjects.length === 0 ? (
                   <TableRow className="hover:bg-gray-700 border-gray-700">
-                    <TableCell colSpan={4} className="text-center text-gray-400 py-6">
+                    <TableCell
+                      colSpan={4}
+                      className="text-center text-gray-400 py-6"
+                    >
                       No projects found.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredProjects.map((project) => (
-                    <TableRow key={project.id} className="hover:bg-gray-700 border-gray-700">
-                      <TableCell className="font-medium text-white">{project.title}</TableCell>
-                      <TableCell className="text-gray-400">{project.date}</TableCell>
+                    <TableRow
+                      key={project.id}
+                      className="hover:bg-gray-700 border-gray-700"
+                    >
+                      <TableCell className="font-medium text-white">
+                        {project.title}
+                      </TableCell>
+                      <TableCell className="text-gray-400">
+                        {project.date}
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {project.tags.map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-gray-700 text-xs rounded-full text-purple-300">
+                          {project.tags.map((tag: string, index: number) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-gray-700 text-xs rounded-full text-purple-300"
+                            >
                               {tag}
                             </span>
                           ))}
@@ -167,12 +229,19 @@ export default function ProjectsPage() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700 text-white">
+                          <DropdownMenuContent
+                            align="end"
+                            className="bg-gray-800 border-gray-700 text-white"
+                          >
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator className="bg-gray-700" />
                             <DropdownMenuItem
                               className="cursor-pointer hover:bg-gray-700"
-                              onClick={() => router.push(`/admin/dashboard/projects/${project.id}`)}
+                              onClick={() =>
+                                router.push(
+                                  `/admin/dashboard/projects/${project.id}`
+                                )
+                              }
                             >
                               <Pencil className="mr-2 h-4 w-4" />
                               Edit
@@ -185,8 +254,14 @@ export default function ProjectsPage() {
                               Delete
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-gray-700" />
-                            <DropdownMenuItem className="cursor-pointer hover:bg-gray-700" asChild>
-                              <Link href={`/projects/${project.slug}`} target="_blank">
+                            <DropdownMenuItem
+                              className="cursor-pointer hover:bg-gray-700"
+                              asChild
+                            >
+                              <Link
+                                href={`/projects/${project.slug}`}
+                                target="_blank"
+                              >
                                 <ExternalLink className="mr-2 h-4 w-4" />
                                 View Live
                               </Link>
@@ -214,7 +289,10 @@ export default function ProjectsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
@@ -224,5 +302,5 @@ export default function ProjectsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

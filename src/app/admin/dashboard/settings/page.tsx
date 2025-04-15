@@ -1,115 +1,204 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save } from "lucide-react"
+import { useState, ChangeEvent, JSX } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Save } from "lucide-react";
 
-export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("general")
-  const [settings, setSettings] = useState({
-    general: {
-      siteTitle: "Najim | Full Stack Developer",
-      siteDescription:
-        "Professional portfolio of Najim, a full stack developer specializing in modern web technologies.",
-      favicon: "/favicon.ico",
-      logo: "/logo.png",
-    },
-    appearance: {
-      theme: "purple",
-      accentColor: "#9333ea",
-      fontFamily: "Inter",
-      enableDarkMode: true,
-      enableAnimations: true,
-    },
-    seo: {
-      metaTitle: "Najim | Full Stack Developer",
-      metaDescription:
-        "Professional portfolio of Najim, a full stack developer specializing in modern web technologies.",
-      ogImage: "/og-image.jpg",
-      twitterHandle: "@najim",
-      googleAnalyticsId: "",
-    },
-    advanced: {
-      cacheControl: "public, max-age=3600",
-      robotsTxt: "User-agent: *\nAllow: /",
-      customCss: "",
-      customJs: "",
-    },
-  })
+export interface GeneralSettings {
+  siteTitle: string;
+  siteDescription: string;
+  favicon: string;
+  logo: string;
+}
 
-  const handleGeneralChange = (e) => {
-    const { name, value } = e.target
+export interface AppearanceSettings {
+  theme: "purple" | "blue" | "green" | "dark" | "light";
+  accentColor: string;
+  fontFamily: string;
+  enableDarkMode: boolean;
+  enableAnimations: boolean;
+}
+
+export interface SeoSettings {
+  metaTitle: string;
+  metaDescription: string;
+  ogImage: string;
+  twitterHandle: string;
+  googleAnalyticsId: string;
+}
+
+export interface AdvancedSettings {
+  cacheControl: string;
+  robotsTxt: string;
+  customCss: string;
+  customJs: string;
+}
+
+export interface Settings {
+  general: GeneralSettings;
+  appearance: AppearanceSettings;
+  seo: SeoSettings;
+  advanced: AdvancedSettings;
+}
+
+const initialSettings: Settings = {
+  general: {
+    siteTitle: "Najim | Full Stack Developer",
+    siteDescription:
+      "Professional portfolio of Najim, a full stack developer specializing in modern web technologies.",
+    favicon: "/favicon.ico",
+    logo: "/logo.png",
+  },
+  appearance: {
+    theme: "purple",
+    accentColor: "#9333ea",
+    fontFamily: "Inter",
+    enableDarkMode: true,
+    enableAnimations: true,
+  },
+  seo: {
+    metaTitle: "Najim | Full Stack Developer",
+    metaDescription:
+      "Professional portfolio of Najim, a full stack developer specializing in modern web technologies.",
+    ogImage: "/og-image.jpg",
+    twitterHandle: "@najim",
+    googleAnalyticsId: "",
+  },
+  advanced: {
+    cacheControl: "public, max-age=3600",
+    robotsTxt: "User-agent: *\nAllow: /",
+    customCss: "",
+    customJs: "",
+  },
+};
+
+type TabValue = "general" | "appearance" | "seo" | "advanced";
+
+export default function SettingsPage(): JSX.Element {
+  const [activeTab, setActiveTab] = useState<TabValue>("general");
+  const [settings, setSettings] = useState<Settings>(initialSettings);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const handleGeneralChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
       general: { ...prev.general, [name]: value },
-    }))
-  }
+    }));
+  };
 
-  const handleAppearanceChange = (e) => {
-    const { name, value } = e.target
+  const handleAppearanceChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
       appearance: { ...prev.appearance, [name]: value },
-    }))
-  }
+    }));
+  };
 
-  const handleAppearanceToggle = (name, checked) => {
+  const handleAppearanceToggle = (
+    name: keyof Settings["appearance"],
+    checked: boolean
+  ): void => {
     setSettings((prev) => ({
       ...prev,
       appearance: { ...prev.appearance, [name]: checked },
-    }))
-  }
+    }));
+  };
 
-  const handleSeoChange = (e) => {
-    const { name, value } = e.target
+  const handleSeoChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
       seo: { ...prev.seo, [name]: value },
-    }))
-  }
+    }));
+  };
 
-  const handleAdvancedChange = (e) => {
-    const { name, value } = e.target
+  const handleAdvancedChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
       advanced: { ...prev.advanced, [name]: value },
-    }))
-  }
+    }));
+  };
 
-  const handleSaveSettings = () => {
-    // In a real app, you would save the settings to your database
-    console.log("Saving settings:", settings)
-    alert("Settings saved successfully!")
-  }
+  const handleSaveSettings = async (): Promise<void> => {
+    try {
+      setIsSaving(true);
+      // In a real app, you would make an API call here
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Saving settings:", settings);
+      // Show success toast
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      // Show error toast
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-white">Settings</h1>
-        <Button onClick={handleSaveSettings} className="bg-purple-600 hover:bg-purple-700">
+        <Button
+          onClick={handleSaveSettings}
+          className="bg-purple-600 hover:bg-purple-700"
+          disabled={isSaving}
+        >
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as TabValue)}
+        className="space-y-6"
+      >
         <TabsList className="bg-gray-700 border-gray-600">
-          <TabsTrigger value="general" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="general"
+            className="data-[state=active]:bg-purple-600"
+          >
             General
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="appearance"
+            className="data-[state=active]:bg-purple-600"
+          >
             Appearance
           </TabsTrigger>
-          <TabsTrigger value="seo" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="seo"
+            className="data-[state=active]:bg-purple-600"
+          >
             SEO
           </TabsTrigger>
-          <TabsTrigger value="advanced" className="data-[state=active]:bg-purple-600">
+          <TabsTrigger
+            value="advanced"
+            className="data-[state=active]:bg-purple-600"
+          >
             Advanced
           </TabsTrigger>
         </TabsList>
@@ -119,7 +208,9 @@ export default function SettingsPage() {
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">General Settings</CardTitle>
-              <CardDescription className="text-gray-400">Configure basic settings for your portfolio.</CardDescription>
+              <CardDescription className="text-gray-400">
+                Configure basic settings for your portfolio.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -193,7 +284,9 @@ export default function SettingsPage() {
                   </Label>
                   <Select
                     value={settings.appearance.theme}
-                    onValueChange={(value) =>
+                    onValueChange={(
+                      value: "purple" | "blue" | "green" | "dark" | "light"
+                    ) =>
                       setSettings((prev) => ({
                         ...prev,
                         appearance: { ...prev.appearance, theme: value },
@@ -226,7 +319,9 @@ export default function SettingsPage() {
                     />
                     <div
                       className="w-10 h-10 rounded-md border border-gray-600"
-                      style={{ backgroundColor: settings.appearance.accentColor }}
+                      style={{
+                        backgroundColor: settings.appearance.accentColor,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -237,7 +332,7 @@ export default function SettingsPage() {
                 </Label>
                 <Select
                   value={settings.appearance.fontFamily}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setSettings((prev) => ({
                       ...prev,
                       appearance: { ...prev.appearance, fontFamily: value },
@@ -264,7 +359,9 @@ export default function SettingsPage() {
                   <Switch
                     id="enableDarkMode"
                     checked={settings.appearance.enableDarkMode}
-                    onCheckedChange={(checked) => handleAppearanceToggle("enableDarkMode", checked)}
+                    onCheckedChange={(checked) =>
+                      handleAppearanceToggle("enableDarkMode", checked)
+                    }
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -274,7 +371,9 @@ export default function SettingsPage() {
                   <Switch
                     id="enableAnimations"
                     checked={settings.appearance.enableAnimations}
-                    onCheckedChange={(checked) => handleAppearanceToggle("enableAnimations", checked)}
+                    onCheckedChange={(checked) =>
+                      handleAppearanceToggle("enableAnimations", checked)
+                    }
                   />
                 </div>
               </div>
@@ -427,8 +526,9 @@ export default function SettingsPage() {
               <div className="text-sm text-gray-400">
                 <p className="font-medium text-yellow-400 mb-1">Warning</p>
                 <p>
-                  Changes to these settings may affect your portfolio's performance and functionality. Make sure you
-                  know what you're doing before saving changes.
+                  Changes to these settings may affect your portfolio&#39;s
+                  performance and functionality. Make sure you know what
+                  you&#39;re doing before saving changes.
                 </p>
               </div>
             </CardFooter>
@@ -436,5 +536,5 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

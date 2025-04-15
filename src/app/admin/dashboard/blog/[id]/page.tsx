@@ -1,27 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Upload } from "lucide-react"
-import Link from "next/link"
-import dynamic from "next/dynamic"
+import { useState, useEffect, ChangeEvent, FormEvent, JSX } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Upload } from "lucide-react";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Blog } from "../page";
 
 // Dynamically import the rich text editor to avoid SSR issues
-const RichTextEditor = dynamic(() => import("@/components/ui/rich-text-editor"), { ssr: false })
-
-// Mock data - in a real app, this would come from your database
+const RichTextEditor = dynamic(
+  () => import("@/components/ui/rich-text-editor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[400px] bg-gray-700 rounded-md animate-pulse" />
+    ),
+  }
+);
+export interface BlogFormProps {
+  params: {
+    id: string;
+  };
+}
 const initialBlogs = [
   {
     id: "1",
     slug: "building-responsive-websites-with-tailwind-css",
     title: "Building Responsive Websites with Tailwind CSS",
-    excerpt: "Learn how to create beautiful, responsive websites using Tailwind CSS, a utility-first CSS framework.",
+    excerpt:
+      "Learn how to create beautiful, responsive websites using Tailwind CSS, a utility-first CSS framework.",
     content: `
       <h2>Introduction to Tailwind CSS</h2>
       <p>Tailwind CSS is a utility-first CSS framework that allows you to build modern websites without ever leaving your HTML. Unlike other CSS frameworks that provide pre-designed components, Tailwind gives you low-level utility classes that let you build completely custom designs.</p>
@@ -53,7 +74,8 @@ const initialBlogs = [
     id: "2",
     slug: "future-of-web-development-with-nextjs",
     title: "The Future of Web Development with Next.js",
-    excerpt: "Explore the features and benefits of Next.js, the React framework for production.",
+    excerpt:
+      "Explore the features and benefits of Next.js, the React framework for production.",
     content: `
       <h2>What is Next.js?</h2>
       <p>Next.js is a React framework that enables server-side rendering, static site generation, and other advanced features to improve performance and developer experience.</p>
@@ -84,70 +106,100 @@ const initialBlogs = [
     authorImage: "/placeholder.svg?height=100&width=100",
     published: true,
   },
-]
+];
 
-export default function BlogForm({ params }) {
-  const router = useRouter()
-  const isNew = params.id === "new"
-  const blogId = params.id
+const emptyBlog: Blog = {
+  id: "",
+  slug: "",
+  title: "",
+  excerpt: "",
+  content: "",
+  image: "/placeholder.svg?height=400&width=600",
+  date: new Date().toISOString().split("T")[0],
+  readTime: "5 min read",
+  author: "Najim",
+  authorImage: "/placeholder.svg?height=100&width=100",
+  published: false,
+};
 
-  const emptyBlog = {
-    id: "",
-    slug: "",
-    title: "",
-    excerpt: "",
-    content: "",
-    image: "/placeholder.svg?height=400&width=600",
-    date: new Date().toISOString().split("T")[0],
-    readTime: "5 min read",
-    author: "Najim",
-    authorImage: "/placeholder.svg?height=100&width=100",
-    published: false,
-  }
+export default function BlogForm({ params }: BlogFormProps): JSX.Element {
+  const router = useRouter();
+  const isNew = params.id === "new";
+  const blogId = params.id;
 
-  const [blog, setBlog] = useState(emptyBlog)
-  const [loading, setLoading] = useState(!isNew)
+  const [blog, setBlog] = useState<Blog>(emptyBlog);
+  const [loading, setLoading] = useState<boolean>(!isNew);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!isNew) {
-      // In a real app, you would fetch the blog from your API
-      const foundBlog = initialBlogs.find((b) => b.id === blogId)
+      // In a real app, this would be an API call
+      const foundBlog = initialBlogs.find((b) => b.id === blogId);
       if (foundBlog) {
-        setBlog(foundBlog)
+        setBlog(foundBlog);
+      } else {
+        router.push("/404");
       }
-      setLoading(false)
+      setLoading(false);
     }
-  }, [isNew, blogId])
+  }, [isNew, blogId, router]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setBlog((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    const { name, value } = e.target;
+    setBlog((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleRichTextChange = (content) => {
-    setBlog((prev) => ({ ...prev, content }))
-  }
+  const handleRichTextChange = (content: string): void => {
+    setBlog((prev) => ({ ...prev, content }));
+  };
 
-  const handlePublishedChange = (checked) => {
-    setBlog((prev) => ({ ...prev, published: checked }))
-  }
+  const handlePublishedChange = (checked: boolean): void => {
+    setBlog((prev) => ({ ...prev, published: checked }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleImageUpload = async (
+    e: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // In a real app, you would upload the file to your storage service
+      // const imageUrl = await uploadImage(file)
+      // setBlog(prev => ({ ...prev, image: imageUrl }))
+    }
+  };
 
-    // In a real app, you would save the blog to your database
-    console.log("Saving blog:", blog)
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
 
-    // Navigate back to the blogs list
-    router.push("/admin/dashboard/blog")
-  }
+    try {
+      // In a real app, you would make an API call here
+      // const savedBlog = await saveBlog(blog)
+      console.log("Saving blog:", blog);
+      router.push("/admin/dashboard/blog");
+    } catch (error) {
+      console.error("Error saving blog:", error);
+      // Handle error (show toast notification, etc.)
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"
+          role="status"
+          aria-label="Loading"
+        >
+          <span className="sr-only">Loading...</span>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -159,14 +211,18 @@ export default function BlogForm({ params }) {
             Back to Blog Posts
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold text-white">{isNew ? "Add New Blog Post" : "Edit Blog Post"}</h1>
+        <h1 className="text-3xl font-bold text-white">
+          {isNew ? "Add New Blog Post" : "Edit Blog Post"}
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-white">Blog Post Details</CardTitle>
-            <CardDescription className="text-gray-400">Fill in the details of your blog post.</CardDescription>
+            <CardDescription className="text-gray-400">
+              Fill in the details of your blog post.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -261,7 +317,15 @@ export default function BlogForm({ params }) {
               <Label className="text-white">Featured Image</Label>
               <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center">
                 <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-400 mb-2">Drag and drop an image, or click to browse</p>
+                <p className="text-sm text-gray-400 mb-2">
+                  Drag and drop an image, or click to browse
+                </p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
                 <Button type="button" variant="outline" size="sm">
                   Upload Image
                 </Button>
@@ -269,9 +333,11 @@ export default function BlogForm({ params }) {
                   <div className="mt-4">
                     <p className="text-sm text-gray-400">Current image:</p>
                     <div className="mt-2 relative w-full max-w-xs mx-auto">
-                      <img
+                      <Image
                         src={blog.image || "/placeholder.svg"}
                         alt="Blog preview"
+                        width={600}
+                        height={400}
                         className="rounded-md w-full h-auto"
                       />
                     </div>
@@ -281,14 +347,22 @@ export default function BlogForm({ params }) {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="published" checked={blog.published} onCheckedChange={handlePublishedChange} />
+              <Switch
+                id="published"
+                checked={blog.published}
+                onCheckedChange={handlePublishedChange}
+              />
               <Label htmlFor="published" className="text-white">
                 {blog.published ? "Published" : "Draft"}
               </Label>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between border-t border-gray-700 pt-6">
-            <Button variant="outline" type="button" onClick={() => router.push("/admin/dashboard/blog")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.push("/admin/dashboard/blog")}
+            >
               Cancel
             </Button>
             <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
@@ -298,5 +372,5 @@ export default function BlogForm({ params }) {
         </Card>
       </form>
     </div>
-  )
+  );
 }

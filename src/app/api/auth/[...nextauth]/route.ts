@@ -1,13 +1,31 @@
-import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import NextAuth, { AuthOptions, User } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+// import { compare } from "bcryptjs";
+import { DefaultSession, DefaultUser } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
 
-// In a real application, you would:
-// 1. Connect to MongoDB
-// 2. Verify credentials against stored admin user
-// 3. Return session data
+export type UserRole = "admin" | "user";
 
-// For demo purposes, we're using hardcoded credentials
-const handler = NextAuth({
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    user: {
+      id: string;
+      role: UserRole;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    role: UserRole;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    role: UserRole;
+  }
+}
+
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -15,42 +33,66 @@ const handler = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        // This is where you would verify the user credentials
-        if (credentials?.username === "admin" && credentials?.password === "password") {
-          return {
-            id: "1",
-            name: "Admin",
-            email: "admin@example.com",
-            role: "admin",
+      async authorize(credentials): Promise<User | null> {
+        try {
+          if (!credentials?.username || !credentials?.password) {
+            throw new Error("Missing credentials");
           }
+
+          // In a real app, verify against database
+          // const user = await db.user.findUnique({ where: { username: credentials.username }})
+          // if (!user || !await compare(credentials.password, user.password)) {
+          //   return null
+          // }
+
+          // For demo purposes only
+          if (
+            credentials.username === process.env.ADMIN_USERNAME &&
+            credentials.password === process.env.ADMIN_PASSWORD
+          ) {
+            return {
+              id: "1",
+              name: "Admin",
+              email: "admin@example.com",
+              role: "admin" as UserRole,
+            };
+          }
+
+          return null;
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
-        return null
       },
     }),
   ],
   pages: {
     signIn: "/admin/login",
+    error: "/admin/login", // Custom error page
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
+        token.role = user.role;
+        token.id = user.id;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role
+        session.user.role = token.role as UserRole;
+        session.user.id = token.id as string;
       }
-      return session
+      return session;
     },
   },
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || "your-secret-key",
-})
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
+};
 
-export { handler as GET, handler as POST }
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
