@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { ITestimonial, Status } from "@/types/testimonial.types";
+import { ITestimonial, Status } from "@/types/model/testimonial.types";
 
 const testimonialSchema = new Schema<ITestimonial>({
   name: { type: String, required: true },

@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { ISkill } from "@/types/skill.types";
+import { ISkill } from "@/types/model/skill.types";
 import { User } from "./user.model";
 
 const skillSchema = new Schema<ISkill>({

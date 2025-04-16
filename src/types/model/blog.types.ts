@@ -11,4 +11,5 @@ export interface IBlog {
   readTime: string;
   authorName: string;
   publishedAt: Date;
+  createdAt: Date;
 }

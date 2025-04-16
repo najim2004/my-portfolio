@@ -1,6 +1,16 @@
 import { Schema, model, models } from "mongoose";
-import { IBlog } from "@/types/blog.types";
+import { IBlog } from "@/types/model/blog.types";
 import { User } from "./user.model";
+
+// Utility function to create slug
+function createSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/-+/g, "-") // Replace multiple - with single -
+    .trim();
+}
 
 const blogSchema = new Schema<IBlog>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,6 +22,25 @@ const blogSchema = new Schema<IBlog>({
   image: { type: String },
   readTime: { type: String, required: true },
   publishedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now },
+});
+
+// Add pre-save middleware for automatic slug generation
+blogSchema.pre("save", async function (next) {
+  if (this.isModified("title")) {
+    const baseSlug = createSlug(this.title);
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Check for existing slug and make it unique
+    while (await models.Blog.findOne({ slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    this.slug = slug;
+  }
+  next();
 });
 
 // নতুন Blog তৈরির পর User-এর blogs অ্যারে আপডেট

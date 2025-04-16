@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { IUser } from "@/types/user.types";
+import { IUser } from "@/types/model/user.types";
 
 const socialLinksSchema = new Schema({
   github: { type: String },

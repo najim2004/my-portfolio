@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { IService } from "@/types/service.types";
+import { IService } from "@/types/model/service.types";
 import { User } from "./user.model";
 
 const serviceSchema = new Schema<IService>({
@@ -7,7 +7,6 @@ const serviceSchema = new Schema<IService>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   icon: { type: String },
-  duration: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

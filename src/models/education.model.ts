@@ -1,13 +1,13 @@
 import { Schema, model, models } from "mongoose";
-import { IEducation } from "@/types/education.types";
+import { IEducation } from "@/types/model/education.types";
 import { User } from "./user.model";
 
 const educationSchema = new Schema<IEducation>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   degree: { type: String, required: true },
   institution: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
+  years: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // নতুন Education তৈরির পর User-এর education অ্যারে আপডেট

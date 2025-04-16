@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { IExperience } from "@/types/experience.types";
+import { IExperience } from "@/types/model/experience.types";
 import { User } from "./user.model";
 
 const experienceSchema = new Schema<IExperience>({
@@ -7,8 +7,8 @@ const experienceSchema = new Schema<IExperience>({
   position: { type: String, required: true },
   company: { type: String, required: true },
   description: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
+  years: { type: String, required: true },
+  createdAt: { type: Date, required: true },
 });
 
 // নতুন Experience তৈরির পর User-এর experience অ্যারে আপডেট

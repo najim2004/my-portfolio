@@ -4,6 +4,6 @@ export interface IEducation {
   userId: Types.ObjectId;
   degree: string;
   institution: string;
-  startDate: Date;
-  endDate?: Date;
+  years: string;
+  createdAt: Date;
 }

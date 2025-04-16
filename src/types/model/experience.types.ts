@@ -5,6 +5,6 @@ export interface IExperience {
   position: string;
   company: string;
   description: string;
-  startDate: Date;
-  endDate?: Date;
+  years: string;
+  createdAt: Date;
 }
