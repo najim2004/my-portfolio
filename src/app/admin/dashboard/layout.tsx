@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   LucideIcon,
+  UserIcon,
 } from "lucide-react";
 
 // Types
@@ -35,6 +36,7 @@ const navigation: NavigationItem[] = [
   { name: "Projects", href: "/admin/dashboard/projects", icon: Briefcase },
   { name: "Blog Posts", href: "/admin/dashboard/blog", icon: FileText },
   { name: "Testimonials", href: "/admin/dashboard/testimonials", icon: Users },
+  { name: "Profile", href: "/admin/dashboard/profile", icon: UserIcon },
   { name: "Settings", href: "/admin/dashboard/settings", icon: Settings },
 ];
 

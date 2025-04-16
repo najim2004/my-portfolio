@@ -3,7 +3,7 @@
 import { useState, ChangeEvent, JSX } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Upload, Plus, X, Save, Pencil } from "lucide-react";
+import { Upload, Plus, X, Save, Pencil, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,14 +37,14 @@ export interface Skill {
   id: string;
   name: string;
   category: string;
-  level: number;
+  icon: string; // Changed from level: number
 }
 
 export interface Service {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: string; // This will now store the base64 image string
 }
 
 export interface SocialLinks {
@@ -55,22 +55,25 @@ export interface SocialLinks {
 
 export interface Profile {
   name: string;
-  title: string;
+  titles: string[];
   email: string;
   phone: string;
   location: string;
   freelance: string;
   about: string;
+  approach: string;
   education: Education[];
   experience: Experience[];
   skills: Skill[];
   services: Service[];
   social: SocialLinks;
+  resumeUrl: string;
+  imageUrl?: string;
 }
 
 const initialProfile = {
   name: "Najim",
-  title: "Full Stack Developer",
+  titles: ["Full Stack Developer", "UI/UX Designer"],
   email: "najim@example.com",
   phone: "+1 (555) 123-4567",
   location: "San Francisco, California",
@@ -79,6 +82,12 @@ const initialProfile = {
     <p>I'm a passionate full stack developer with a keen eye for design and a love for creating intuitive, dynamic user experiences. With expertise in modern JavaScript frameworks and a strong foundation in HTML, CSS, and responsive design, I transform ideas into beautiful, functional websites.</p>
     <p>My journey in web development began during my college years when I built my first website for a local business. Since then, I've been constantly learning and adapting to new technologies and methodologies to stay at the forefront of the industry.</p>
   `,
+  approach: `I believe in creating clean, efficient, and user-friendly solutions. My approach combines:
+    - Thorough understanding of client requirements
+    - Modern development practices and tools
+    - Focus on performance and scalability
+    - Regular communication and feedback
+    - Continuous learning and improvement`,
   education: [
     {
       id: "1",
@@ -104,14 +113,14 @@ const initialProfile = {
     },
   ],
   skills: [
-    { id: "1", name: "HTML5", category: "Frontend", level: 95 },
-    { id: "2", name: "CSS3", category: "Frontend", level: 90 },
-    { id: "3", name: "JavaScript", category: "Frontend", level: 95 },
-    { id: "4", name: "React", category: "Frontend", level: 90 },
-    { id: "5", name: "Next.js", category: "Frontend", level: 85 },
-    { id: "6", name: "Node.js", category: "Backend", level: 80 },
-    { id: "7", name: "MongoDB", category: "Backend", level: 75 },
-    { id: "8", name: "Git", category: "DevOps", level: 85 },
+    { id: "1", name: "HTML5", category: "Frontend", icon: "" },
+    { id: "2", name: "CSS3", category: "Frontend", icon: "" },
+    { id: "3", name: "JavaScript", category: "Frontend", icon: "" },
+    { id: "4", name: "React", category: "Frontend", icon: "" },
+    { id: "5", name: "Next.js", category: "Frontend", icon: "" },
+    { id: "6", name: "Node.js", category: "Backend", icon: "" },
+    { id: "7", name: "MongoDB", category: "Backend", icon: "" },
+    { id: "8", name: "Git", category: "DevOps", icon: "" },
   ],
   services: [
     {
@@ -119,42 +128,42 @@ const initialProfile = {
       title: "Web Development",
       description:
         "Custom websites and web applications built with modern technologies and best practices.",
-      icon: "Code",
+      icon: "",
     },
     {
       id: "2",
       title: "UI/UX Design",
       description:
         "User-centered design solutions that are both beautiful and functional.",
-      icon: "Figma",
+      icon: "",
     },
     {
       id: "3",
       title: "Mobile Development",
       description:
         "Native and cross-platform mobile applications for iOS and Android.",
-      icon: "Smartphone",
+      icon: "",
     },
     {
       id: "4",
       title: "SEO Optimization",
       description:
         "Improve your website's visibility and ranking in search engine results.",
-      icon: "Globe",
+      icon: "",
     },
     {
       id: "5",
       title: "Performance Optimization",
       description:
         "Speed up your website and improve user experience with performance optimizations.",
-      icon: "Zap",
+      icon: "",
     },
     {
       id: "6",
       title: "API Development",
       description:
         "Custom API development and integration with third-party services.",
-      icon: "Sparkles",
+      icon: "",
     },
   ],
   social: {
@@ -162,6 +171,8 @@ const initialProfile = {
     linkedin: "https://linkedin.com/in/username",
     twitter: "https://twitter.com/username",
   },
+  resumeUrl: "https://example.com/resume.pdf",
+  imageUrl: "",
 };
 
 // Dynamically import the rich text editor
@@ -181,7 +192,7 @@ export default function ProfilePage(): JSX.Element {
   const [newSkill, setNewSkill] = useState<Omit<Skill, "id">>({
     name: "",
     category: "",
-    level: 75,
+    icon: "", // Changed from level: 75
   });
   const [newEducation, setNewEducation] = useState<Omit<Education, "id">>({
     degree: "",
@@ -201,6 +212,7 @@ export default function ProfilePage(): JSX.Element {
   });
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [newTitle, setNewTitle] = useState<string>("");
 
   const handlePersonalChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
@@ -209,6 +221,10 @@ export default function ProfilePage(): JSX.Element {
 
   const handleAboutChange = (content: string): void => {
     setProfile((prev) => ({ ...prev, about: content }));
+  };
+
+  const handleApproachChange = (content: string): void => {
+    setProfile((prev) => ({ ...prev, approach: content }));
   };
 
   const handleSocialChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -226,7 +242,7 @@ export default function ProfilePage(): JSX.Element {
         ...prev,
         skills: [...prev.skills, { ...newSkill, id }],
       }));
-      setNewSkill({ name: "", category: "", level: 75 });
+      setNewSkill({ name: "", category: "", icon: "" });
     }
   };
 
@@ -314,6 +330,23 @@ export default function ProfilePage(): JSX.Element {
     setProfile((prev) => ({
       ...prev,
       services: prev.services.filter((service) => service.id !== id),
+    }));
+  };
+
+  const handleAddTitle = (): void => {
+    if (newTitle.trim()) {
+      setProfile((prev) => ({
+        ...prev,
+        titles: [...prev.titles, newTitle.trim()],
+      }));
+      setNewTitle("");
+    }
+  };
+
+  const handleRemoveTitle = (indexToRemove: number): void => {
+    setProfile((prev) => ({
+      ...prev,
+      titles: prev.titles.filter((_, index) => index !== indexToRemove),
     }));
   };
 
@@ -414,16 +447,42 @@ export default function ProfilePage(): JSX.Element {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="title" className="text-white">
-                      Professional Title
-                    </Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      value={profile.title}
-                      onChange={handlePersonalChange}
-                      className="bg-gray-700 border-gray-600 text-white"
-                    />
+                    <Label className="text-white">Professional Titles</Label>
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <Input
+                          id="newTitle"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          placeholder="Add a professional title"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                        <Button
+                          onClick={handleAddTitle}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.titles.map((title, index) => (
+                          <Badge
+                            key={index}
+                            className="bg-gray-700 text-white px-3 py-1 flex items-center gap-2"
+                          >
+                            {title}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveTitle(index)}
+                              className="h-4 w-4 p-0 text-gray-400 hover:text-white hover:bg-transparent"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -484,19 +543,26 @@ export default function ProfilePage(): JSX.Element {
 
                 <div className="space-y-2">
                   <Label className="text-white">Profile Image</Label>
-                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center">
-                    <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-400 mb-2">
-                      Drag and drop an image, or click to browse
-                    </p>
-                    <Button type="button" variant="outline" size="sm">
-                      Upload Image
-                    </Button>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-400">Current image:</p>
-                      <div className="mt-2 relative w-32 h-32 mx-auto">
+                  <div className="space-y-4">
+                    <Input
+                      type="url"
+                      placeholder="Enter image URL"
+                      value={profile.imageUrl || ""}
+                      onChange={(e) =>
+                        setProfile((prev) => ({
+                          ...prev,
+                          imageUrl: e.target.value,
+                        }))
+                      }
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                    <div className="flex items-center justify-center">
+                      <div className="relative w-32 h-32">
                         <Image
-                          src="/placeholder.svg?height=100&width=100"
+                          src={
+                            profile.imageUrl ||
+                            "/placeholder.svg?height=100&width=100"
+                          }
                           alt="Profile"
                           className="rounded-full w-full h-full object-cover"
                           width={100}
@@ -548,6 +614,37 @@ export default function ProfilePage(): JSX.Element {
                     </div>
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="resumeUrl" className="text-white">
+                    Resume/CV Link
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="resumeUrl"
+                      name="resumeUrl"
+                      type="url"
+                      value={profile.resumeUrl}
+                      onChange={handlePersonalChange}
+                      placeholder="https://example.com/your-resume.pdf"
+                      className="bg-gray-700 border-gray-600 text-white flex-1"
+                    />
+                    {profile.resumeUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        onClick={() => window.open(profile.resumeUrl, "_blank")}
+                        className="text-white border-gray-600 hover:bg-gray-700"
+                      >
+                        View Resume
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    Add a link to your downloadable resume or CV
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -562,16 +659,33 @@ export default function ProfilePage(): JSX.Element {
                 Update your bio and personal description.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="about" className="text-white">
-                  Bio
-                </Label>
-                <RichTextEditor
-                  value={profile.about}
-                  onChange={handleAboutChange}
-                  className="bg-gray-700 border-gray-600 text-white min-h-[300px]"
-                />
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="about" className="text-white">
+                    Bio
+                  </Label>
+                  <RichTextEditor
+                    value={profile.about}
+                    onChange={handleAboutChange}
+                    className="bg-gray-700 border-gray-600 text-white min-h-[200px]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="approach" className="text-white">
+                    My Approach
+                  </Label>
+                  <RichTextEditor
+                    value={profile.approach}
+                    onChange={handleApproachChange}
+                    className="bg-gray-700 border-gray-600 text-white min-h-[200px]"
+                  />
+                  <p className="text-sm text-gray-400 mt-1">
+                    Describe your working methodology, principles, and
+                    professional approach.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -583,12 +697,12 @@ export default function ProfilePage(): JSX.Element {
             <CardHeader>
               <CardTitle className="text-white">Skills</CardTitle>
               <CardDescription className="text-gray-400">
-                Manage your skills and expertise.
+                Manage your skills and expertise with custom icons.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="skillName" className="text-white">
                       Skill Name
@@ -617,26 +731,36 @@ export default function ProfilePage(): JSX.Element {
                       className="bg-gray-700 border-gray-600 text-white"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="skillLevel" className="text-white">
-                      Proficiency Level (%)
-                    </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white">Skill Icon URL</Label>
+                  <div className="space-y-4">
                     <Input
-                      id="skillLevel"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newSkill.level}
+                      type="url"
+                      placeholder="Enter icon URL"
+                      value={newSkill.icon}
                       onChange={(e) =>
-                        setNewSkill({
-                          ...newSkill,
-                          level: Number.parseInt(e.target.value) || 0,
-                        })
+                        setNewSkill({ ...newSkill, icon: e.target.value })
                       }
                       className="bg-gray-700 border-gray-600 text-white"
                     />
+                    {newSkill.icon && (
+                      <div className="flex items-center justify-center">
+                        <div className="w-12 h-12 relative">
+                          <Image
+                            src={newSkill.icon}
+                            alt="Skill icon preview"
+                            layout="fill"
+                            objectFit="contain"
+                            className="rounded-md"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+
                 <Button
                   onClick={handleAddSkill}
                   className="bg-purple-600 hover:bg-purple-700"
@@ -648,39 +772,47 @@ export default function ProfilePage(): JSX.Element {
 
               <div className="space-y-2">
                 <Label className="text-white">Current Skills</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {profile.skills.map((skill) => (
                     <div
                       key={skill.id}
-                      className="flex items-center justify-between bg-gray-700 p-3 rounded-md"
+                      className="flex items-center justify-between bg-gray-700 p-4 rounded-md"
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-center">
-                          <span className="font-medium text-white">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 relative">
+                          {skill.icon ? (
+                            <Image
+                              src={skill.icon}
+                              alt={skill.name}
+                              layout="fill"
+                              objectFit="contain"
+                              className="rounded-md"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-600 rounded-md">
+                              <Code className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium text-white">
                             {skill.name}
-                          </span>
-                          <Badge className="ml-2 bg-gray-600 text-white">
+                          </div>
+                          <Badge className="bg-gray-600 text-white">
                             {skill.category}
                           </Badge>
                         </div>
-                        <div className="w-full bg-gray-600 rounded-full h-2">
-                          <div
-                            className="bg-purple-600 h-2 rounded-full"
-                            style={{ width: `${skill.level}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {skill.level}%
-                        </span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveSkill(skill.id)}
-                        className="text-gray-400 hover:text-white hover:bg-gray-600"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveSkill(skill.id)}
+                          className="text-gray-400 hover:text-white hover:bg-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -934,30 +1066,29 @@ export default function ProfilePage(): JSX.Element {
             </CardHeader>
             <CardContent className="space-y-6">
               {editingService ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="serviceTitle" className="text-white">
-                        Service Title
-                      </Label>
+                <div className="space-y-4 grid grid-cols-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceTitle" className="text-white">
+                      Service Title
+                    </Label>
+                    <Input
+                      id="serviceTitle"
+                      value={editingService.title}
+                      onChange={(e) =>
+                        setEditingService({
+                          ...editingService,
+                          title: e.target.value,
+                        })
+                      }
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Service Icon URL</Label>
+                    <div className="space-y-4">
                       <Input
-                        id="serviceTitle"
-                        value={editingService.title}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            title: e.target.value,
-                          })
-                        }
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="serviceIcon" className="text-white">
-                        Icon Name
-                      </Label>
-                      <Input
-                        id="serviceIcon"
+                        type="url"
+                        placeholder="Enter icon URL"
                         value={editingService.icon}
                         onChange={(e) =>
                           setEditingService({
@@ -965,9 +1096,21 @@ export default function ProfilePage(): JSX.Element {
                             icon: e.target.value,
                           })
                         }
-                        placeholder="E.g., Code, Figma, Smartphone"
                         className="bg-gray-700 border-gray-600 text-white"
                       />
+                      {editingService.icon && (
+                        <div className="flex items-center justify-center">
+                          <div className="w-12 h-12 relative">
+                            <Image
+                              src={editingService.icon}
+                              alt="Service icon preview"
+                              layout="fill"
+                              objectFit="contain"
+                              className="rounded-md"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -1002,38 +1145,49 @@ export default function ProfilePage(): JSX.Element {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="serviceTitle" className="text-white">
-                        Service Title
-                      </Label>
+                <div className="space-y-4 grid grid-cols-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceTitle" className="text-white">
+                      Service Title
+                    </Label>
+                    <Input
+                      id="serviceTitle"
+                      value={newService.title}
+                      onChange={(e) =>
+                        setNewService({
+                          ...newService,
+                          title: e.target.value,
+                        })
+                      }
+                      placeholder="E.g., Web Development"
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Service Icon URL</Label>
+                    <div className="space-y-4">
                       <Input
-                        id="serviceTitle"
-                        value={newService.title}
-                        onChange={(e) =>
-                          setNewService({
-                            ...newService,
-                            title: e.target.value,
-                          })
-                        }
-                        placeholder="E.g., Web Development"
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="serviceIcon" className="text-white">
-                        Icon Name
-                      </Label>
-                      <Input
-                        id="serviceIcon"
+                        type="url"
+                        placeholder="Enter icon URL"
                         value={newService.icon}
                         onChange={(e) =>
                           setNewService({ ...newService, icon: e.target.value })
                         }
-                        placeholder="E.g., Code, Figma, Smartphone"
                         className="bg-gray-700 border-gray-600 text-white"
                       />
+                      {newService.icon && (
+                        <div className="flex items-center justify-center">
+                          <div className="w-12 h-12 relative">
+                            <Image
+                              src={newService.icon}
+                              alt="Service icon preview"
+                              layout="fill"
+                              objectFit="contain"
+                              className="rounded-md"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -1072,10 +1226,20 @@ export default function ProfilePage(): JSX.Element {
                       className="bg-gray-700 p-4 rounded-md border border-gray-600 hover:border-purple-500/50 transition-all"
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-                          <span className="text-purple-500">
-                            {service.icon}
-                          </span>
+                        <div className="w-12 h-12 relative">
+                          {service.icon ? (
+                            <Image
+                              src={service.icon || "/"}
+                              alt={service.title}
+                              layout="fill"
+                              objectFit="contain"
+                              className="rounded-md"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-600 rounded-md">
+                              <Code className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button
