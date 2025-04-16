@@ -152,7 +152,6 @@ export default function AboutPage(): JSX.Element {
                   <div className="mt-8 space-y-4">
                     <Button
                       className="w-full bg-purple-600 hover:bg-purple-700"
-                      onClick={() => window.open("/resume.pdf", "_blank")}
                     >
                       <Download className="mr-2 h-4 w-4" aria-hidden="true" />
                       Download Resume

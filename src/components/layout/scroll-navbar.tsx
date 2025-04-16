@@ -19,7 +19,7 @@ const navLinks: NavLink[] = [
   { name: "Projects", href: "/projects" },
   { name: "Testimonials", href: "/testimonials" },
   { name: "Blog", href: "/blog" },
-  { name: "Contact", href: "#contact" },
+  { name: "Contact", href: "/#contact" },
 ];
 
 export default function ScrollNavbar(): JSX.Element {

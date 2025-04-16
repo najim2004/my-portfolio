@@ -23,6 +23,7 @@ interface TestimonialFormData {
   position: string;
   company: string;
   testimonial: string;
+  avatar: string; // Add this line
 }
 
 // Metadata
@@ -100,6 +101,7 @@ export default function TestimonialsPage(): JSX.Element {
       position: formData.get("position") as string,
       company: formData.get("company") as string,
       testimonial: formData.get("testimonial") as string,
+      avatar: formData.get("avatar") as string || "/placeholder.svg?height=100&width=100", // Add this line
     };
 
     // Handle form submission logic here
@@ -255,6 +257,35 @@ export default function TestimonialsPage(): JSX.Element {
                     className="bg-gray-700 border-gray-600 focus:ring-purple-500"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="avatar" className="block text-sm font-medium mb-2">
+                    Your Photo URL
+                  </label>
+                  <Input
+                    type="text"
+                    id="avatar"
+                    name="avatar"
+                    placeholder="Enter your photo URL (e.g., https://example.com/photo.jpg)"
+                    className="bg-gray-700 border-gray-600 focus:ring-purple-500"
+                  />
+                  {/* Preview */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-2">Photo Preview</label>
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-700">
+                      <Image
+                        id="avatar-preview"
+                        src={
+                          (document.getElementById("avatar") as HTMLInputElement)?.value ||
+                          "/placeholder.svg?height=100&width=100"
+                        }
+                        alt="Avatar preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="text-center">

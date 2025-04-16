@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent, FormEvent, JSX } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Plus, X, Upload } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
@@ -32,12 +32,6 @@ export interface Project {
   liveLink: string;
   githubLink: string;
   date: string;
-}
-
-export interface ProjectFormProps {
-  params: {
-    id: string;
-  };
 }
 
 const initialProjects = [
@@ -121,16 +115,15 @@ const emptyProject: Project = {
   date: new Date().toISOString().split("T")[0],
 };
 
-export default function ProjectForm({ params }: ProjectFormProps): JSX.Element {
+export default function ProjectForm(): JSX.Element {
   const router = useRouter();
-  const isNew = params.id === "new";
-  const projectId = params.id;
+  const isNew = useParams().id === "new";
+  const projectId = useParams().id;
 
   const [project, setProject] = useState<Project>(emptyProject);
   const [newTag, setNewTag] = useState<string>("");
   const [newFeature, setNewFeature] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(!isNew);
-  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!isNew) {
@@ -153,18 +146,6 @@ export default function ProjectForm({ params }: ProjectFormProps): JSX.Element {
 
   const handleRichTextChange = (content: string): void => {
     setProject((prev) => ({ ...prev, fullDescription: content }));
-  };
-
-  const handleImageUpload = async (
-    e: ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      // In a real app, you would upload to your storage service
-      // const imageUrl = await uploadImage(file)
-      // setProject(prev => ({ ...prev, image: imageUrl }))
-    }
   };
 
   const handleAddTag = (): void => {
@@ -355,27 +336,22 @@ export default function ProjectForm({ params }: ProjectFormProps): JSX.Element {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white">Project Image</Label>
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center">
-                <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-400 mb-2">
-                  Drag and drop an image, or click to browse
-                </p>
+              <Label className="text-white">Project Image URL</Label>
+              <div className="space-y-4">
                 <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
+                  id="image"
+                  name="image"
+                  value={project.image}
+                  onChange={handleChange}
+                  placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                  className="bg-gray-700 border-gray-600 text-white"
                 />
-                <Button type="button" variant="outline" size="sm">
-                  Upload Image
-                </Button>
                 {project.image && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-400">Current image:</p>
-                    <div className="mt-2 relative w-full max-w-xs mx-auto">
+                    <p className="text-sm text-gray-400 mb-2">Image Preview:</p>
+                    <div className="relative w-full max-w-xs mx-auto">
                       <Image
-                        src={project.image || "/placeholder.svg"}
+                        src={project.image}
                         alt="Project preview"
                         width={600}
                         height={400}

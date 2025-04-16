@@ -48,7 +48,7 @@ const blogs: Blog[] = [
     date: "May 15, 2023",
     readTime: "5 min read",
     author: "Najim",
-    slug: "building-responsive-websites-with-tailwind-css",
+    slug: "building-responsive-websites-with-tailwind-css ",
   },
   {
     title: "The Future of Web Development with Next.js",

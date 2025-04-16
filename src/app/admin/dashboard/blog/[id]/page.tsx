@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent, FormEvent, JSX } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Blog } from "../page";
@@ -31,11 +31,6 @@ const RichTextEditor = dynamic(
     ),
   }
 );
-export interface BlogFormProps {
-  params: {
-    id: string;
-  };
-}
 const initialBlogs = [
   {
     id: "1",
@@ -122,14 +117,13 @@ const emptyBlog: Blog = {
   published: false,
 };
 
-export default function BlogForm({ params }: BlogFormProps): JSX.Element {
+export default function BlogForm(): JSX.Element {
   const router = useRouter();
-  const isNew = params.id === "new";
-  const blogId = params.id;
+  const isNew = useParams().id === "new";
+  const blogId = useParams().id as string;
 
   const [blog, setBlog] = useState<Blog>(emptyBlog);
   const [loading, setLoading] = useState<boolean>(!isNew);
-  const [imageFile, setImageFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!isNew) {
@@ -157,18 +151,6 @@ export default function BlogForm({ params }: BlogFormProps): JSX.Element {
 
   const handlePublishedChange = (checked: boolean): void => {
     setBlog((prev) => ({ ...prev, published: checked }));
-  };
-
-  const handleImageUpload = async (
-    e: ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      // In a real app, you would upload the file to your storage service
-      // const imageUrl = await uploadImage(file)
-      // setBlog(prev => ({ ...prev, image: imageUrl }))
-    }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -314,27 +296,22 @@ export default function BlogForm({ params }: BlogFormProps): JSX.Element {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white">Featured Image</Label>
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center">
-                <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-400 mb-2">
-                  Drag and drop an image, or click to browse
-                </p>
+              <Label className="text-white">Featured Image URL</Label>
+              <div className="space-y-4">
                 <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
+                  id="image"
+                  name="image"
+                  value={blog.image}
+                  onChange={handleChange}
+                  placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                  className="bg-gray-700 border-gray-600 text-white"
                 />
-                <Button type="button" variant="outline" size="sm">
-                  Upload Image
-                </Button>
                 {blog.image && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-400">Current image:</p>
-                    <div className="mt-2 relative w-full max-w-xs mx-auto">
+                    <p className="text-sm text-gray-400 mb-2">Image Preview:</p>
+                    <div className="relative w-full max-w-xs mx-auto">
                       <Image
-                        src={blog.image || "/placeholder.svg"}
+                        src={blog.image}
                         alt="Blog preview"
                         width={600}
                         height={400}
