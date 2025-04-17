@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, JSX } from "react"
-import { motion, AnimatePresence, Variants } from "framer-motion"
-import { Phone, ArrowUp, X, Plus } from "lucide-react"
+import { useState, useEffect, useCallback, JSX } from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { Phone, ArrowUp, X, Plus } from "lucide-react";
 
 // Types
 interface ScrollTimeout extends Window {
@@ -11,80 +11,92 @@ interface ScrollTimeout extends Window {
 
 declare const window: ScrollTimeout;
 
+interface FloatingActionButtonProps {
+  whatsappNumber: string; // Add this prop interface
+}
+
 // Animation variants
 const containerVariants: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
   visible: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.8 },
-}
+};
 
 const iconVariants: Variants = {
   hidden: { rotate: 0, opacity: 0 },
   visible: { rotate: 0, opacity: 1 },
   exit: { rotate: 90, opacity: 0 },
-}
+};
 
 const menuItemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: 20 },
-}
+};
 
-export default function FloatingActionButton(): JSX.Element {
-  const [isVisible, setIsVisible] = useState<boolean>(false)
-  const [isExpanded, setIsExpanded] = useState<boolean>(false)
-  const [isScrolling, setIsScrolling] = useState<boolean>(false)
-  const [lastScrollY, setLastScrollY] = useState<number>(0)
+export default function FloatingActionButton({
+  whatsappNumber,
+}: FloatingActionButtonProps): JSX.Element {
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isScrolling, setIsScrolling] = useState<boolean>(false);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
 
   const handleScroll = useCallback(() => {
-    const currentScrollY = window.scrollY
+    const currentScrollY = window.scrollY;
 
     // Determine if user is actively scrolling
     if (Math.abs(currentScrollY - lastScrollY) > 5) {
-      setIsScrolling(true)
+      setIsScrolling(true);
       if (window.scrollTimeout) {
-        clearTimeout(window.scrollTimeout)
+        clearTimeout(window.scrollTimeout);
       }
 
       window.scrollTimeout = window.setTimeout(() => {
-        setIsScrolling(false)
-      }, 1000)
+        setIsScrolling(false);
+      }, 1000);
     }
 
-    setLastScrollY(currentScrollY)
+    setLastScrollY(currentScrollY);
 
     if (currentScrollY > 300) {
-      setIsVisible(true)
+      setIsVisible(true);
     } else {
-      setIsVisible(false)
-      setIsExpanded(false)
+      setIsVisible(false);
+      setIsExpanded(false);
     }
-  }, [lastScrollY])
+  }, [lastScrollY]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
-      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("scroll", handleScroll);
       if (window.scrollTimeout) {
-        clearTimeout(window.scrollTimeout)
+        clearTimeout(window.scrollTimeout);
       }
-    }
-  }, [handleScroll])
+    };
+  }, [handleScroll]);
 
   const toggleExpand = (): void => {
-    setIsExpanded((prev) => !prev)
-  }
+    setIsExpanded((prev) => !prev);
+  };
 
   const scrollToTop = (): void => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
-    })
-  }
+    });
+  };
+
+  const handleWhatsAppClick = () => {
+    // Format the WhatsApp URL
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, "")}`;
+    window.open(whatsappUrl, "_blank");
+  };
 
   // Only show when visible AND either expanded or actively scrolling
-  const shouldShow = isVisible && (isExpanded || isScrolling)
+  const shouldShow = isVisible && (isExpanded || isScrolling);
 
   return (
     <AnimatePresence>
@@ -114,7 +126,11 @@ export default function FloatingActionButton(): JSX.Element {
                   exit="exit"
                   transition={{ duration: 0.2 }}
                 >
-                  {isExpanded ? <X size={24} aria-hidden="true" /> : <Plus size={24} aria-hidden="true" />}
+                  {isExpanded ? (
+                    <X size={24} aria-hidden="true" />
+                  ) : (
+                    <Plus size={24} aria-hidden="true" />
+                  )}
                 </motion.div>
               </AnimatePresence>
             </button>
@@ -123,18 +139,18 @@ export default function FloatingActionButton(): JSX.Element {
             <AnimatePresence>
               {isExpanded && (
                 <>
-                  <motion.a
-                    href="tel:+1234567890"
+                  <motion.button
+                    onClick={handleWhatsAppClick}
                     variants={menuItemVariants}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
                     transition={{ duration: 0.2, delay: 0.1 }}
                     className="absolute bottom-20 right-0 flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white shadow-lg hover:bg-green-700 transition-colors"
-                    aria-label="Call me"
+                    aria-label="Contact on WhatsApp"
                   >
                     <Phone size={20} aria-hidden="true" />
-                  </motion.a>
+                  </motion.button>
 
                   <motion.button
                     onClick={scrollToTop}
@@ -156,5 +172,5 @@ export default function FloatingActionButton(): JSX.Element {
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

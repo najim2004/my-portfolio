@@ -6,14 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Quote, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// Types
-interface Testimonial {
-  name: string;
-  position: string;
-  content: string;
-  avatar: string;
-}
+import { HomeData } from "@/types/api/home.types";
 
 // Animation variants
 const containerVariants: Variants = {
@@ -36,31 +29,35 @@ const itemVariants: Variants = {
 };
 
 // Testimonials data
-const testimonials: Testimonial[] = [
-  {
-    name: "Sarah Johnson",
-    position: "CEO at TechStart",
-    content:
-      "Najim delivered an exceptional website that exceeded our expectations. His attention to detail and ability to translate our vision into reality was impressive.",
-    avatar: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    name: "Michael Chen",
-    position: "Marketing Director",
-    content:
-      "Working with Najim was a pleasure. He's not only technically skilled but also brings creative ideas to the table. Our conversion rates improved significantly after the redesign.",
-    avatar: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    name: "Emily Rodriguez",
-    position: "Product Manager",
-    content:
-      "Najim's expertise in front-end development helped us create a user-friendly interface that our customers love. He's responsive, professional, and delivers on time.",
-    avatar: "/placeholder.svg?height=100&width=100",
-  },
-];
+// const testimonials: Testimonial[] = [
+//   {
+//     name: "Sarah Johnson",
+//     position: "CEO at TechStart",
+//     content:
+//       "Najim delivered an exceptional website that exceeded our expectations. His attention to detail and ability to translate our vision into reality was impressive.",
+//     avatar: "/placeholder.svg?height=100&width=100",
+//   },
+//   {
+//     name: "Michael Chen",
+//     position: "Marketing Director",
+//     content:
+//       "Working with Najim was a pleasure. He's not only technically skilled but also brings creative ideas to the table. Our conversion rates improved significantly after the redesign.",
+//     avatar: "/placeholder.svg?height=100&width=100",
+//   },
+//   {
+//     name: "Emily Rodriguez",
+//     position: "Product Manager",
+//     content:
+//       "Najim's expertise in front-end development helped us create a user-friendly interface that our customers love. He's responsive, professional, and delivers on time.",
+//     avatar: "/placeholder.svg?height=100&width=100",
+//   },
+// ];
 
-export default function Testimonials(): JSX.Element {
+export default function Testimonials({
+  testimonials,
+}: {
+  testimonials: HomeData["testimonials"];
+}): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
@@ -80,7 +77,7 @@ export default function Testimonials(): JSX.Element {
             animate={isInView ? "visible" : "hidden"}
             className="grid md:grid-cols-3 gap-8"
           >
-            {testimonials.map((testimonial, index) => (
+            {testimonials?.map((testimonial, index) => (
               <motion.div
                 key={`testimonial-${testimonial.name}-${index}`}
                 variants={itemVariants}
@@ -99,7 +96,7 @@ export default function Testimonials(): JSX.Element {
                 <div className="flex items-center mb-6">
                   <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                     <Image
-                      src={testimonial.avatar}
+                      src={testimonial.avatar || "/placeholder.svg"}
                       alt={`${testimonial.name}'s profile picture`}
                       width={48}
                       height={48}
@@ -119,7 +116,7 @@ export default function Testimonials(): JSX.Element {
 
                 <blockquote>
                   <p className="text-gray-300 italic">
-                    &#34;{testimonial.content}&#34;
+                    &#34;{testimonial.message}&#34;
                   </p>
                 </blockquote>
               </motion.div>

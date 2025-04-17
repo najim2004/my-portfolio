@@ -6,17 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Clock, User } from "lucide-react";
-
-// Types
-interface Blog {
-  title: string;
-  excerpt: string;
-  image: string;
-  date: string;
-  readTime: string;
-  author: string;
-  slug: string;
-}
+import { HomeData } from "@/types/api/home.types";
 
 // Animation variants
 const containerVariants: Variants = {
@@ -38,41 +28,45 @@ const itemVariants: Variants = {
   },
 };
 
-// Blog data
-const blogs: Blog[] = [
-  {
-    title: "Building Responsive Websites with Tailwind CSS",
-    excerpt:
-      "Learn how to create beautiful, responsive websites using Tailwind CSS, a utility-first CSS framework.",
-    image: "/placeholder.svg?height=400&width=600",
-    date: "May 15, 2023",
-    readTime: "5 min read",
-    author: "Najim",
-    slug: "building-responsive-websites-with-tailwind-css ",
-  },
-  {
-    title: "The Future of Web Development with Next.js",
-    excerpt:
-      "Explore the features and benefits of Next.js, the React framework for production.",
-    image: "/placeholder.svg?height=400&width=600",
-    date: "June 22, 2023",
-    readTime: "7 min read",
-    author: "Najim",
-    slug: "future-of-web-development-with-nextjs",
-  },
-  {
-    title: "Optimizing Performance in React Applications",
-    excerpt:
-      "Tips and tricks for improving the performance of your React applications.",
-    image: "/placeholder.svg?height=400&width=600",
-    date: "July 10, 2023",
-    readTime: "6 min read",
-    author: "Najim",
-    slug: "optimizing-performance-in-react-applications",
-  },
-];
+// // Blog data
+// const blogs: Blog[] = [
+//   {
+//     title: "Building Responsive Websites with Tailwind CSS",
+//     excerpt:
+//       "Learn how to create beautiful, responsive websites using Tailwind CSS, a utility-first CSS framework.",
+//     image: "/placeholder.svg?height=400&width=600",
+//     date: "May 15, 2023",
+//     readTime: "5 min read",
+//     author: "Najim",
+//     slug: "building-responsive-websites-with-tailwind-css ",
+//   },
+//   {
+//     title: "The Future of Web Development with Next.js",
+//     excerpt:
+//       "Explore the features and benefits of Next.js, the React framework for production.",
+//     image: "/placeholder.svg?height=400&width=600",
+//     date: "June 22, 2023",
+//     readTime: "7 min read",
+//     author: "Najim",
+//     slug: "future-of-web-development-with-nextjs",
+//   },
+//   {
+//     title: "Optimizing Performance in React Applications",
+//     excerpt:
+//       "Tips and tricks for improving the performance of your React applications.",
+//     image: "/placeholder.svg?height=400&width=600",
+//     date: "July 10, 2023",
+//     readTime: "6 min read",
+//     author: "Najim",
+//     slug: "optimizing-performance-in-react-applications",
+//   },
+// ];
 
-export default function Blogs(): JSX.Element {
+export default function Blogs({
+  blogs,
+}: {
+  blogs: HomeData["blogs"];
+}): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
@@ -92,7 +86,7 @@ export default function Blogs(): JSX.Element {
             animate={isInView ? "visible" : "hidden"}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {blogs.map((blog, index) => (
+            {blogs?.map((blog, index) => (
               <motion.div
                 key={`blog-${blog.slug}-${index}`}
                 variants={itemVariants}
@@ -106,7 +100,7 @@ export default function Blogs(): JSX.Element {
                 <Link href={`/blog/${blog.slug}`} prefetch>
                   <div className="relative overflow-hidden aspect-video">
                     <Image
-                      src={blog.image}
+                      src={blog.image || "/placeholder.svg"}
                       alt={`Cover image for ${blog.title}`}
                       width={600}
                       height={400}
@@ -124,8 +118,8 @@ export default function Blogs(): JSX.Element {
                       title="Publication date"
                     >
                       <Calendar className="w-4 h-4 mr-1" aria-hidden="true" />
-                      <time dateTime={new Date(blog.date).toISOString()}>
-                        {blog.date}
+                      <time dateTime={new Date(blog.publishedAt).toISOString()}>
+                        {new Date(blog.publishedAt).toLocaleDateString()}
                       </time>
                     </div>
                     <div className="flex items-center mr-4" title="Read time">
@@ -134,7 +128,7 @@ export default function Blogs(): JSX.Element {
                     </div>
                     <div className="flex items-center" title="Author">
                       <User className="w-4 h-4 mr-1" aria-hidden="true" />
-                      <span>{blog.author}</span>
+                      <span>{blog.authorName}</span>
                     </div>
                   </div>
 

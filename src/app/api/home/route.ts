@@ -3,13 +3,18 @@ import { connectDB } from "@/lib/db";
 import { User } from "@/models/user.model";
 import { Testimonial } from "@/models/testimonial.model";
 import { HomeData } from "@/types/api/home.types";
+import "@/models/project.model";
+import "@/models/blog.model";
+import "@/models/service.model";
+import "@/models/skill.model";
+import "@/models/education.model";
+import "@/models/experience.model";
+import { ISkill } from "@/types/model/skill.types";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     await connectDB();
-
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
+    const userId = "68009ad61efea10ff2ef2c31";
 
     if (!userId) {
       return NextResponse.json(
@@ -21,30 +26,36 @@ export async function GET(request: Request) {
     // Parallel fetch for user data and testimonials
     const [user, testimonials] = await Promise.all([
       User.findById(userId)
-        .select("-password -__v")
+        .select(
+          "-password -__v -blogs -projects -services -skills -educations -experiences"
+        )
         .populate([
           {
             path: "projects",
             select:
-              "_id title slug description technologies liveLink githubLink image -__v",
+              "_id title slug description technologies liveLink githubLink image",
             options: { limit: 3 },
           },
           {
             path: "blogs",
-            select: "_id publishedAt readTime title excerpt slug image -__v",
+            select: "_id publishedAt readTime title excerpt slug image",
             options: { limit: 3 },
           },
           {
             path: "services",
-            select: "_id title description icon duration createdAt -__v",
+            select: "-userId -__v",
           },
           {
             path: "skills",
-            select: "_id name category level icon -__v",
+            select: "-userId -__v",
+            populate: {
+              path: "categoryId",
+              select: "name",
+            },
           },
         ]),
       Testimonial.find()
-        .select("_id name email avatar position company message -__v")
+        .select("_id name email avatar position company message")
         .limit(3)
         .sort({ createdAt: -1 }),
     ]);
@@ -81,7 +92,12 @@ export async function GET(request: Request) {
       blogs: blogsWithAuthor,
       services: user.services,
       testimonials,
-      skills: user.skills,
+      skills: user.skills.map(
+        (skill: { categoryId: { name: string } } & Omit<ISkill, "userId">) => ({
+          ...skill,
+          category: skill.categoryId.name,
+        })
+      ),
     };
 
     return NextResponse.json(homeData, { status: 200 });

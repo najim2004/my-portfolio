@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { ITestimonial, Status } from "@/types/model/testimonial.types";
+import { ITestimonial } from "@/types/model/testimonial.types";
 import { connectDB } from "@/lib/db";
 import { Testimonial } from "@/models/testimonial.model";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth.config";
 
 export class TestimonialValidationError extends Error {
   constructor(message: string) {
@@ -64,7 +66,7 @@ export async function POST(
       validateTestimonial(body);
       const testimonial = await Testimonial.create({
         ...body,
-        status: Status.PENDING,
+        status: "PENDING",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -95,6 +97,62 @@ export async function POST(
         error:
           (error instanceof Error && error.message) ||
           "Failed to create testimonial",
+      },
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  }
+}
+
+export async function GET(
+  request: Request
+): Promise<
+  NextResponse<
+    { testimonials: (ITestimonial & { _id: string })[] } | { error: string }
+  >
+> {
+  try {
+    await connectDB();
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const statusParam = searchParams.get("status");
+    const status = statusParam as ITestimonial["status"];
+
+    // Build query object
+    if (!status || !["REJECTED", "PENDING"].includes(status)) {
+      const session = await getServerSession(authOptions);
+      if (!session?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+    const query = status ? { status } : {};
+
+    const testimonials = await Testimonial.find(query)
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return NextResponse.json(
+      { testimonials },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=300", // Cache for 5 minutes
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error fetching testimonials:", error);
+    return NextResponse.json(
+      {
+        error:
+          (error instanceof Error && error.message) ||
+          "Failed to fetch testimonials",
       },
       {
         status: 500,

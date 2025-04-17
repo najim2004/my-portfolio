@@ -1,25 +1,22 @@
 import { connectDB } from "@/lib/db";
 import { Blog } from "@/models/blog.model";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { IBlog } from "@/types/model/blog.types";
 import { BlogType } from "@/types/api/home.types";
+import { authOptions } from "@/lib/auth.config";
+import "@/models/user.model";
 
 // GET blog by slug
 export async function GET(
-  request: NextRequest
-): Promise<
-  NextResponse<
-    (IBlog & { authorName: string; _id: string }) | { error: string }
-  >
-> {
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+): Promise<NextResponse> {
   try {
     await connectDB();
-    const { searchParams } = new URL(request.url);
-    const slug = searchParams.get("slug");
+    const { slug } = params;
     const blog = await Blog.findOne({ slug })
-      .select("-__v")
+      .select("-__v -userId")
       .populate("userId", "fullName")
       .sort({ publishedAt: -1 });
     if (!blog) {
@@ -27,7 +24,7 @@ export async function GET(
     }
     return NextResponse.json(
       {
-        ...blog,
+        ...blog.toObject(),
         _id: blog._id.toString(),
         userId: blog.userId._id.toString(),
         authorName: blog.userId.fullName,
@@ -44,11 +41,11 @@ export async function GET(
 
 // PUT update blog
 export async function PUT(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { slug: string } }
 ): Promise<NextResponse<BlogType | { error: string }>> {
   try {
-    const { searchParams } = new URL(request.url);
-    const _id = searchParams.get("slug");
+    const _id = params.slug;
     if (!_id) {
       return NextResponse.json(
         { error: "Blog ID is required" },
@@ -90,16 +87,15 @@ export async function PUT(
 
 // DELETE blog
 export async function DELETE(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { slug: string } }
 ): Promise<NextResponse<{ message: string } | { error: string }>> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const url = new URL(request.url);
-    const id = url.searchParams.get("id");
+    const id = params.slug;
 
     if (!id) {
       return NextResponse.json(

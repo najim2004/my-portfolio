@@ -45,7 +45,7 @@ export interface HomeData {
   >;
   projects: ProjectType[];
   blogs: BlogType[];
-  services: IService[];
+  services: Omit<IService, "userId">[];
   testimonials?: ({ _id: string } & ITestimonial)[];
-  skills: ISkill[];
+  skills: { category: string } & Omit<ISkill, "userId">[];
 }

@@ -103,6 +103,7 @@ export default function TestimonialsPage(): JSX.Element {
       testimonial: formData.get("testimonial") as string,
       avatar: formData.get("avatar") as string || "/placeholder.svg?height=100&width=100", // Add this line
     };
+    console.log(testimonialData);
 
     // Handle form submission logic here
   };

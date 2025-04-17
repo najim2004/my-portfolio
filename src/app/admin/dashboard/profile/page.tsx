@@ -3,7 +3,7 @@
 import { useState, ChangeEvent, JSX } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Upload, Plus, X, Save, Pencil, Code } from "lucide-react";
+import { Plus, X, Save, Pencil, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -212,6 +212,7 @@ export default function ProfilePage(): JSX.Element {
   });
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  console.log("[loading]:",isLoading);
   const [newTitle, setNewTitle] = useState<string>("");
 
   const handlePersonalChange = (e: ChangeEvent<HTMLInputElement>): void => {

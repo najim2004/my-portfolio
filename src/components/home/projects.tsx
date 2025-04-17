@@ -6,16 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
-
-// Types
-interface Project {
-  title: string;
-  description: string;
-  image: string;
-  tags: string[];
-  liveLink: string;
-  githubLink: string;
-}
+import { HomeData } from "@/types/api/home.types";
 
 // Animation variants
 const containerVariants: Variants = {
@@ -37,38 +28,11 @@ const itemVariants: Variants = {
   },
 };
 
-// Projects data
-const projects: Project[] = [
-  {
-    title: "E-Commerce Platform",
-    description:
-      "A fully responsive e-commerce platform with product filtering and cart functionality.",
-    image: "/placeholder.svg?height=400&width=600",
-    tags: ["Next.js", "MongoDB", "Tailwind CSS", "Stripe"],
-    liveLink: "#",
-    githubLink: "#",
-  },
-  {
-    title: "Admin Dashboard",
-    description:
-      "An admin dashboard with data visualization, user management, and dark mode.",
-    image: "/placeholder.svg?height=400&width=600",
-    tags: ["React", "Chart.js", "Tailwind CSS", "Redux"],
-    liveLink: "#",
-    githubLink: "#",
-  },
-  {
-    title: "Social Media App",
-    description:
-      "A social platform with real-time messaging, post creation, and user profiles.",
-    image: "/placeholder.svg?height=400&width=600",
-    tags: ["Next.js", "MongoDB", "Socket.io", "Tailwind CSS"],
-    liveLink: "#",
-    githubLink: "#",
-  },
-];
-
-export default function Projects(): JSX.Element {
+export default function Projects({
+  projects,
+}: {
+  projects: HomeData["projects"];
+}): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
@@ -88,7 +52,7 @@ export default function Projects(): JSX.Element {
             animate={isInView ? "visible" : "hidden"}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {projects.map((project, index) => (
+            {projects?.map((project, index) => (
               <motion.div
                 key={`project-${project.title}-${index}`}
                 variants={itemVariants}
@@ -101,7 +65,7 @@ export default function Projects(): JSX.Element {
               >
                 <div className="relative overflow-hidden aspect-video">
                   <Image
-                    src={project.image}
+                    src={project.image || "/placeholder.svg"}
                     alt={`Screenshot of ${project.title}`}
                     width={600}
                     height={400}
@@ -118,7 +82,7 @@ export default function Projects(): JSX.Element {
                   <p className="text-gray-300 mb-4">{project.description}</p>
 
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {project.tags.map((tag, tagIndex) => (
+                    {project.technologies.map((tag, tagIndex) => (
                       <span
                         key={`${project.title}-tag-${tagIndex}`}
                         className="text-xs bg-gray-800 text-purple-300 px-3 py-1 rounded-full"
@@ -135,7 +99,7 @@ export default function Projects(): JSX.Element {
                       asChild
                     >
                       <Link
-                        href={project.liveLink}
+                        href={project.liveLink || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -145,7 +109,7 @@ export default function Projects(): JSX.Element {
                     </Button>
                     <Button size="sm" variant="outline" asChild>
                       <Link
-                        href={project.githubLink}
+                        href={project.githubLink || "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

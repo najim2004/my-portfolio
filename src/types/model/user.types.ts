@@ -19,9 +19,10 @@ export interface IUser {
   resumeUrl?: string;
   about?: string;
   approach?: string;
+  hobbies?: string;
   socialLinks: SocialLinks;
-  education: Types.ObjectId[];
-  experience: Types.ObjectId[];
+  educations: Types.ObjectId[];
+  experiences: Types.ObjectId[];
   skills: Types.ObjectId[];
   services: Types.ObjectId[];
   projects: Types.ObjectId[];

@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { ITestimonial, Status } from "@/types/model/testimonial.types";
+import { ITestimonial } from "@/types/model/testimonial.types";
 
 const testimonialSchema = new Schema<ITestimonial>({
   name: { type: String, required: true },
@@ -8,7 +8,7 @@ const testimonialSchema = new Schema<ITestimonial>({
   position: { type: String, required: true },
   company: { type: String, required: true },
   message: { type: String, required: true },
-  status: { enum: Status, default: Status.PENDING },
+  status: { type: String, default: "PENDING" },
   createdAt: { type: Date, default: Date.now },
 });
 

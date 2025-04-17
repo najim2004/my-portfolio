@@ -5,9 +5,13 @@ import { User } from "./user.model";
 const skillSchema = new Schema<ISkill>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   name: { type: String, required: true },
-  category: { type: String, required: true },
-  level: { type: String, required: true },
+  categoryId: {
+    type: Schema.Types.ObjectId,
+    ref: "SkillCategory",
+    required: true,
+  },
   icon: { type: String },
+  color: { type: String },
 });
 
 // নতুন Skill তৈরির পর User-এর skills অ্যারে আপডেট

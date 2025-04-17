@@ -7,27 +7,32 @@ import Link from "next/link";
 import { ArrowDown } from "lucide-react";
 
 // Type definitions
-type Designation = string;
-interface AnimationProps {
-  opacity: number;
-  y?: number;
+interface HeroProps {
+  designations: string[];
+  name: string;
+  description: string;
+  resumeLink?: string;
+  aboutLink?: string;
 }
-
-// Constants
-const designations: Designation[] = [
-  "Front-End Web Developer",
-  "UI/UX Designer",
-  "Mobile App Developer",
-  "Web Developer",
-  "Frontend Specialist",
-];
 
 const fadeInUpVariants: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
 };
 
-export default function Hero(): JSX.Element {
+export default function Hero({
+  designations = [
+    "Front-End Web Developer",
+    "UI/UX Designer",
+    "Mobile App Developer",
+    "Web Developer",
+    "Frontend Specialist",
+  ],
+  name = "Najim",
+  description = "I build exceptional and accessible digital experiences for the web.",
+  resumeLink = "#",
+  aboutLink = "#about",
+}: HeroProps): JSX.Element {
   const ref = useRef<HTMLElement>(null);
   const [index, setIndex] = useState<number>(0);
   const [subIndex, setSubIndex] = useState<number>(0);
@@ -63,7 +68,7 @@ export default function Hero(): JSX.Element {
     }, 150);
 
     return () => clearTimeout(timeout);
-  }, [subIndex, index, reverse]);
+  }, [subIndex, index, reverse, designations]);
 
   // Blinking cursor effect
   useEffect((): (() => void) => {
@@ -104,7 +109,7 @@ export default function Hero(): JSX.Element {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-5xl md:text-7xl font-bold mb-6"
           >
-            Hi, I&apos;m <span className="text-purple-500">Najim</span>
+            Hi, I&apos;m <span className="text-purple-500">{name}</span>
           </motion.h1>
 
           <motion.p
@@ -114,7 +119,7 @@ export default function Hero(): JSX.Element {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="text-gray-300 text-xl md:text-2xl max-w-2xl mx-auto mb-10"
           >
-            I build exceptional and accessible digital experiences for the web.
+            {description}
           </motion.p>
 
           <motion.div
@@ -124,8 +129,12 @@ export default function Hero(): JSX.Element {
             transition={{ delay: 0.8, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Button size="lg" className="bg-purple-600 hover:bg-purple-700">
-              Download Resume
+            <Button
+              size="lg"
+              className="bg-purple-600 hover:bg-purple-700"
+              asChild
+            >
+              <Link href={resumeLink}>Download Resume</Link>
             </Button>
 
             <Button
@@ -134,7 +143,7 @@ export default function Hero(): JSX.Element {
               asChild
               className="bg-white text-gray-900 hover:bg-gray-100 border-white"
             >
-              <Link href="#projects">View My Work</Link>
+              <Link href={"/projects"}>View My Work</Link>
             </Button>
           </motion.div>
         </div>
@@ -152,7 +161,7 @@ export default function Hero(): JSX.Element {
         className="absolute bottom-10 text-center"
       >
         <Link
-          href="#about"
+          href={aboutLink}
           className="flex flex-col items-center text-gray-400 hover:text-purple-400 transition-colors"
         >
           <span className="text-sm mb-2">Scroll Down</span>

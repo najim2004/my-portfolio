@@ -3,9 +3,9 @@ import { Blog } from "@/models/blog.model";
 import { BlogType } from "../../../types/api/home.types";
 import { connectDB } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 import { IBlog } from "@/types/model/blog.types";
 import { User } from "@/models/user.model";
+import { authOptions } from "@/lib/auth.config";
 
 // Custom error type
 class ApiError extends Error {
@@ -23,7 +23,7 @@ export async function GET(): Promise<ApiResponse<BlogType[]>> {
     await connectDB();
 
     const blogs = await Blog.find()
-      .select("_id title slug excerpt publishedAt image -__v")
+      .select("_id title slug excerpt publishedAt image readTime")
       .populate("userId", "fullName")
       .sort({ publishedAt: -1 });
 
@@ -50,15 +50,6 @@ export async function GET(): Promise<ApiResponse<BlogType[]>> {
   }
 }
 
-// POST request type
-interface CreateBlogRequest
-  extends Omit<IBlog, "createdAt" | "userId" | "slug"> {
-  title: string;
-  content: string;
-  excerpt: string;
-  image?: string;
-}
-
 // POST new blog
 export async function POST(
   request: NextRequest
@@ -72,7 +63,7 @@ export async function POST(
     // Connect to DB and get user data in parallel
     const [, user] = await Promise.all([
       connectDB(),
-      User.findById(session.user.id).select("fullName -__v").lean() as Promise<{
+      User.findById(session.user.id).select("fullName").lean() as Promise<{
         fullName: string;
       } | null>,
     ]);
@@ -81,7 +72,10 @@ export async function POST(
       throw new ApiError(404, "User not found");
     }
 
-    const body = (await request.json()) as CreateBlogRequest;
+    const body = (await request.json()) as Omit<
+      IBlog,
+      "createdAt" | "userId" | "slug"
+    >;
 
     // Validate required fields
     if (!body.title || !body.content || !body.excerpt) {

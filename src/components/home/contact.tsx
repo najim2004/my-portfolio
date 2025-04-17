@@ -21,6 +21,17 @@ interface SocialLink {
   icon: JSX.Element;
 }
 
+interface ContactProps {
+  email: string;
+  phone: string;
+  location: string;
+  socialLinks: {
+    github: string;
+    linkedin: string;
+    twitter: string;
+  };
+}
+
 // Animation variants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -41,28 +52,32 @@ const itemVariants: Variants = {
   },
 }
 
-// Social links data
-const socialLinks: SocialLink[] = [
-  {
-    platform: "GitHub",
-    url: "https://github.com/yourusername",
-    icon: <Github className="w-5 h-5" aria-hidden="true" />,
-  },
-  {
-    platform: "LinkedIn",
-    url: "https://linkedin.com/in/yourusername",
-    icon: <Linkedin className="w-5 h-5" aria-hidden="true" />,
-  },
-  {
-    platform: "Twitter",
-    url: "https://twitter.com/yourusername",
-    icon: <Twitter className="w-5 h-5" aria-hidden="true" />,
-  },
-]
-
-export default function Contact(): JSX.Element {
+export default function Contact({
+  email,
+  phone,
+  location,
+  socialLinks,
+}: ContactProps): JSX.Element {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, amount: 0.2 })
+
+  const socialIcons: SocialLink[] = [
+    {
+      platform: "GitHub",
+      url: socialLinks.github,
+      icon: <Github className="w-5 h-5" aria-hidden="true" />,
+    },
+    {
+      platform: "LinkedIn",
+      url: socialLinks.linkedin,
+      icon: <Linkedin className="w-5 h-5" aria-hidden="true" />,
+    },
+    {
+      platform: "Twitter",
+      url: socialLinks.twitter,
+      icon: <Twitter className="w-5 h-5" aria-hidden="true" />,
+    },
+  ]
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
@@ -90,7 +105,6 @@ export default function Contact(): JSX.Element {
         throw new Error("Failed to send message")
       }
 
-      // Reset form on success
       form.reset()
       alert("Message sent successfully!")
     } catch (error) {
@@ -123,7 +137,7 @@ export default function Contact(): JSX.Element {
                   <Mail className="w-5 h-5 text-purple-500 mt-1 mr-4" />
                   <div>
                     <h4 className="font-medium mb-1">Email</h4>
-                    <p className="text-gray-400">najim@example.com</p>
+                    <p className="text-gray-400">{email}</p>
                   </div>
                 </div>
 
@@ -131,7 +145,7 @@ export default function Contact(): JSX.Element {
                   <Phone className="w-5 h-5 text-purple-500 mt-1 mr-4" />
                   <div>
                     <h4 className="font-medium mb-1">Phone</h4>
-                    <p className="text-gray-400">+1 (555) 123-4567</p>
+                    <p className="text-gray-400">{phone}</p>
                   </div>
                 </div>
 
@@ -139,18 +153,20 @@ export default function Contact(): JSX.Element {
                   <MapPin className="w-5 h-5 text-purple-500 mt-1 mr-4" />
                   <div>
                     <h4 className="font-medium mb-1">Location</h4>
-                    <p className="text-gray-400">San Francisco, California</p>
+                    <p className="text-gray-400">{location}</p>
                   </div>
                 </div>
               </div>
 
               <h3 className="text-xl font-bold mb-4">Connect With Me</h3>
               <div className="flex space-x-4">
-                {socialLinks.map((link) => (
+                {socialIcons.map((link) => (
                   <a
                     key={link.platform}
                     href={link.url}
                     className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-purple-600 transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={link.platform}
                   >
                     {link.icon}

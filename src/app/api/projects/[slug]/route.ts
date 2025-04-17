@@ -2,16 +2,18 @@ import { connectDB } from "@/lib/db";
 import { Project } from "@/models/project.model";
 import { IProject } from "@/types/model/project.types";
 import { Types } from "mongoose";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth.config";
 
 // GET project by slug
 export async function GET(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { slug: string } }
 ): Promise<NextResponse<IProject | { error: string }>> {
   try {
     await connectDB();
-    const { searchParams } = new URL(request.url);
-    const slug = searchParams.get("slug");
+    const { slug } = params;
     const project = await Project.findOne({ slug }).select("-__v");
     return NextResponse.json(project, { status: 200 });
   } catch {
@@ -24,11 +26,16 @@ export async function GET(
 
 // PUT update project
 export async function PUT(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { slug: string } }
 ): Promise<NextResponse<IProject | { error: string }>> {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await connectDB();
-    const _id = new URL(request.url).searchParams.get("slug");
+    const { slug: _id } = params;
     if (!_id) {
       return NextResponse.json(
         { error: "Project ID is required" },
@@ -65,12 +72,16 @@ export async function PUT(
 
 // DELETE project
 export async function DELETE(
-  request: NextRequest
+  request: NextRequest,
+  { params }: { params: { slug: string } }
 ): Promise<NextResponse<{ message: string } | { error: string }>> {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await connectDB();
-    const { searchParams } = new URL(request.url);
-    const _id = searchParams.get("slug");
+    const { slug: _id } = params;
 
     if (!_id || !Types.ObjectId.isValid(_id)) {
       return NextResponse.json(

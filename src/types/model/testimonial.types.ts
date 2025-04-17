@@ -1,10 +1,5 @@
-export enum Status {
-  PENDING,
-  APPROVED,
-  REJECTED,
-}
 export interface ITestimonial {
-  status: Status;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   name: string;
   email: string;
   avatar?: string;
